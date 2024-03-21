@@ -6,39 +6,57 @@ import com.example.projectapp.data.PlayingCard
 class Player(val user: User, private var chipAmount: Int): PlayerRoundActions {
 
     private lateinit var holeCards: Pair<PlayingCard, PlayingCard>
-    private var playerState: PlayerState = PlayerState.NONE
+    var playerState: PlayerState = PlayerState.NONE
+    var playerBet: Int = 0
 
     fun assignHoleCards(holeCardsAssigned: Pair<PlayingCard, PlayingCard>){
-
-        if(!this::holeCards.isInitialized){
-            holeCards = holeCardsAssigned
-        }
+        holeCards = holeCardsAssigned
     }
 
-    override fun call(currentBet: Int): Int {
-        if(currentBet >= chipAmount){
+    fun getHoleCards(): Pair<PlayingCard, PlayingCard>? {
+        if(this::holeCards.isInitialized) {
+            return holeCards
+        }
+
+        return null
+    }
+
+    override fun call(currentHighBet: Int): Int {
+        val betDifference = currentHighBet - playerBet
+        if(betDifference >= chipAmount){
             playerState = PlayerState.ALL_IN
-            var callAmount = chipAmount
+            val allInCall = chipAmount
             chipAmount = 0
-            return callAmount
-        }
-        chipAmount -= currentBet
+            playerBet += allInCall
 
-        return currentBet
+            return allInCall
+        }
+
+        playerBet += betDifference
+        chipAmount -= betDifference
+
+        return betDifference
     }
 
-    override fun raise(currentBet: Int, raiseAmount: Int): Int {
-        chipAmount -= currentBet + raiseAmount
-        return currentBet + raiseAmount
+    override fun raise(currentHighBet: Int, raiseAmount: Int): Int {
+        val betDifference = (currentHighBet - playerBet)
+        playerBet += betDifference + raiseAmount
+        chipAmount -= betDifference + raiseAmount
+
+        return betDifference + raiseAmount
     }
 
     override fun paySmallBlind(smallBlindValue: Int): Int {
         chipAmount -= smallBlindValue
+        playerBet = smallBlindValue
+
         return smallBlindValue
     }
 
     override fun payBigBlind(bigBlindValue: Int): Int {
         chipAmount -= bigBlindValue
+        playerBet = bigBlindValue
+
         return bigBlindValue
     }
 
@@ -48,5 +66,9 @@ class Player(val user: User, private var chipAmount: Int): PlayerRoundActions {
 
     override fun fold() {
         playerState = PlayerState.FOLD
+    }
+
+    override fun toString(): String {
+        return "Player(chipAmount=$chipAmount, playerBet=$playerBet)"
     }
 }

@@ -1,7 +1,6 @@
 package com.example.projectapp.data
 
 enum class Rank(val value: Int, val label: String) {
-    ACE(1, "ace"),
     TWO(2, "2"),
     THREE(3, "3"),
     FOUR(4, "4"),
@@ -13,5 +12,6 @@ enum class Rank(val value: Int, val label: String) {
     TEN(10, "10"),
     JACK(11, "jack"),
     QUEEN(12, "queen"),
-    KING(13, "king")
+    KING(13, "king"),
+    ACE(14, "ace")
 }
