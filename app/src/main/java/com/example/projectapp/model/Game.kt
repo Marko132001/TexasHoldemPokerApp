@@ -11,8 +11,7 @@ class Game(var players: MutableList<Player>): TableActions {
     var currentHighBet: Int = 0
     val smallBlind: Int = 25
     val bigBlind: Int = 50
-    var gameRound: GameRound = GameRound.PREFLOP
-    private var communityCards: MutableList<PlayingCard> = mutableListOf<PlayingCard>()
+    private var communityCards: MutableList<PlayingCard> = mutableListOf()
     var dealerButtonPos: Int = -1
 
     object CardConstants {
@@ -23,6 +22,13 @@ class Game(var players: MutableList<Player>): TableActions {
         const val TURN_CARD_INDEX = 3
         const val RIVER_CARD_INDEX = 4
     }
+
+    object PlayerRoleOffsets {
+        const val SMALL_BLIND = 1
+        const val BIG_BLIND = 2
+        const val UNDER_THE_GUN = 3
+    }
+
     override fun updatePlayerList() {
         TODO(
             "If lobby is not full (capacity=5) ? add player : throw exception message" +
@@ -44,16 +50,15 @@ class Game(var players: MutableList<Player>): TableActions {
         }
     }
 
-    override fun showFlop(): List<PlayingCard> {
-        return communityCards.subList(CardConstants.FLOP_CARDS_START, CardConstants.FLOP_CARDS_END)
-    }
+    override fun showStreet(gameRound: GameRound): Any {
+        return when(gameRound){
+            GameRound.FLOP -> communityCards
+                .subList(CardConstants.FLOP_CARDS_START, CardConstants.FLOP_CARDS_END)
 
-    override fun showTurn(): PlayingCard {
-        return communityCards[CardConstants.TURN_CARD_INDEX]
-    }
-
-    override fun showRiver(): PlayingCard {
-        return communityCards[CardConstants.RIVER_CARD_INDEX]
+            GameRound.TURN -> communityCards[CardConstants.TURN_CARD_INDEX]
+            GameRound.RIVER -> communityCards[CardConstants.RIVER_CARD_INDEX]
+            else -> communityCards
+        }
     }
 
     override fun updatePot(playerBet: Int) {
@@ -63,6 +68,11 @@ class Game(var players: MutableList<Player>): TableActions {
     override fun updateDealerButtonPos() {
         dealerButtonPos = (dealerButtonPos + 1) % players.size
     }
+
+    override fun getPlayerRolePos(playerRoleOffset: Int): Int {
+        return (dealerButtonPos + playerRoleOffset) % players.size
+    }
+
 
     override fun rankCardHands() {
         TODO("Implement the appropriate card ranking algorithm")

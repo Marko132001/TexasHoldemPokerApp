@@ -3,7 +3,7 @@ package com.example.projectapp.model
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
 
-class Player(val user: User, private var chipAmount: Int): PlayerRoundActions {
+class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActions {
 
     private lateinit var holeCards: Pair<PlayingCard, PlayingCard>
     var playerState: PlayerState = PlayerState.NONE
@@ -23,17 +23,17 @@ class Player(val user: User, private var chipAmount: Int): PlayerRoundActions {
 
     override fun call(currentHighBet: Int): Int {
         val betDifference = currentHighBet - playerBet
-        if(betDifference >= chipAmount){
+        if(betDifference >= chipBuyInAmount){
             playerState = PlayerState.ALL_IN
-            val allInCall = chipAmount
-            chipAmount = 0
+            val allInCall = chipBuyInAmount
+            chipBuyInAmount = 0
             playerBet += allInCall
 
             return allInCall
         }
 
         playerBet += betDifference
-        chipAmount -= betDifference
+        chipBuyInAmount -= betDifference
 
         return betDifference
     }
@@ -41,20 +41,20 @@ class Player(val user: User, private var chipAmount: Int): PlayerRoundActions {
     override fun raise(currentHighBet: Int, raiseAmount: Int): Int {
         val betDifference = (currentHighBet - playerBet)
         playerBet += betDifference + raiseAmount
-        chipAmount -= betDifference + raiseAmount
+        chipBuyInAmount -= betDifference + raiseAmount
 
         return betDifference + raiseAmount
     }
 
     override fun paySmallBlind(smallBlindValue: Int): Int {
-        chipAmount -= smallBlindValue
+        chipBuyInAmount -= smallBlindValue
         playerBet = smallBlindValue
 
         return smallBlindValue
     }
 
     override fun payBigBlind(bigBlindValue: Int): Int {
-        chipAmount -= bigBlindValue
+        chipBuyInAmount -= bigBlindValue
         playerBet = bigBlindValue
 
         return bigBlindValue
@@ -69,6 +69,6 @@ class Player(val user: User, private var chipAmount: Int): PlayerRoundActions {
     }
 
     override fun toString(): String {
-        return "Player(chipAmount=$chipAmount, playerBet=$playerBet)"
+        return "Player(chipAmount=$chipBuyInAmount, playerBet=$playerBet)"
     }
 }

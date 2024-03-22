@@ -1,16 +1,16 @@
 package com.example.projectapp.model
 
+import com.example.projectapp.data.GameRound
 import com.example.projectapp.data.PlayingCard
 
 interface TableActions {
     fun updatePlayerList()
     fun generateCommunityCards()
     fun generateHoleCards()
-    fun showFlop(): List<PlayingCard>
-    fun showTurn(): PlayingCard
-    fun showRiver(): PlayingCard
+    fun showStreet(gameRound: GameRound): Any
     fun updatePot(playerBet: Int)
     fun updateDealerButtonPos()
+    fun getPlayerRolePos(playerRoleOffset: Int): Int
     fun rankCardHands()
 
 }

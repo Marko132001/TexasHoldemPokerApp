@@ -8,7 +8,7 @@ import com.example.projectapp.model.Player
 import com.example.projectapp.model.User
 
 
-fun gameRoundSim(game: Game, playerIndex: Int){
+fun gameRoundSim(game: Game, playerIndex: Int, endRoundIndex: Int){
 
     var raiseFlag: Boolean = false
     var playerIndex: Int = playerIndex
@@ -16,6 +16,7 @@ fun gameRoundSim(game: Game, playerIndex: Int){
     do{
 
         if(game.players[playerIndex].playerState == PlayerState.FOLD) {
+            playerIndex = (playerIndex + 1) % game.players.size
             continue
         }
 
@@ -48,10 +49,10 @@ fun gameRoundSim(game: Game, playerIndex: Int){
         println(game.players[0].toString())
         println(game.players[1].toString())
         println(game.players[2].toString())
-        println(playerIndex)
 
-    }while((playerIndex != game.dealerButtonPos && !raiseFlag) ||
-        game.players[playerIndex].playerBet != game.currentHighBet)
+    }while((playerIndex != endRoundIndex && !raiseFlag) ||
+        (game.players[playerIndex].playerBet != game.currentHighBet)
+    )
 
 }
 
@@ -61,9 +62,9 @@ fun main() {
     val user2 = User("User2")
     val user3 = User("User3")
     //Init players for the game
-    val player1 = Player(user1, chipAmount = 500)
-    val player2 = Player(user2, chipAmount = 900)
-    val player3 = Player(user3, chipAmount = 1000)
+    val player1 = Player(user1, chipBuyInAmount = 500)
+    val player2 = Player(user2, chipBuyInAmount = 900)
+    val player3 = Player(user3, chipBuyInAmount = 1000)
     val listOfPlayers: MutableList<Player> = mutableListOf()
 
     listOfPlayers.add(player1)
@@ -73,41 +74,63 @@ fun main() {
     //Init the game and add players
     val game = Game(listOfPlayers)
 
+    //TODO: "Reset certain player and game parameters before the beginning of each new game."
+
     for(round in GameRound.entries){
-
+        //TODO: "Move playerIndex and endRoundIndex in class context"
         var playerIndex: Int
-        var raiseFlag: Boolean = false
+        var endRoundIndex: Int
+        var round: GameRound = round
 
-        if(round == GameRound.PREFLOP) {
-            game.generateCommunityCards()
-            game.generateHoleCards()
-
-            //Move dealar button position at beginning of each game
-            game.updateDealerButtonPos()
-
-            //Players bet the smallBlind and bigBlind values. Pot is updated.
-            game.updatePot(
-                game.players[(game.dealerButtonPos + 1) % game.players.size]
-                    .paySmallBlind(game.smallBlind)
-            )
-            game.updatePot(
-                game.players[(game.dealerButtonPos + 2) % game.players.size]
-                    .payBigBlind(game.bigBlind)
-            )
-            game.currentHighBet = game.bigBlind
-
-            playerIndex = (game.dealerButtonPos + 3) % game.players.size
-
-            gameRoundSim(game, playerIndex)
-
+        if(game.players.count{it.playerState == PlayerState.FOLD} == game.players.size - 1){
+            round = GameRound.SHOWDOWN
         }
-        else if(round == GameRound.FLOP){
 
-            println(game.showFlop())
+        when(round) {
+            GameRound.PREFLOP -> {
+                game.generateCommunityCards()
+                game.generateHoleCards()
 
-            playerIndex = (game.dealerButtonPos + 1) % game.players.size
+                //Move dealar button position at beginning of each game
+                game.updateDealerButtonPos()
 
-            gameRoundSim(game, playerIndex)
+                //Players bet the smallBlind and bigBlind values. Pot is updated.
+                game.updatePot(
+                    game.players[game.getPlayerRolePos(Game.PlayerRoleOffsets.SMALL_BLIND)]
+                        .paySmallBlind(game.smallBlind)
+                )
+                game.updatePot(
+                    game.players[game.getPlayerRolePos(Game.PlayerRoleOffsets.BIG_BLIND)]
+                        .payBigBlind(game.bigBlind)
+                )
+                game.currentHighBet = game.bigBlind
+
+                playerIndex = game.getPlayerRolePos(Game.PlayerRoleOffsets.UNDER_THE_GUN)
+                endRoundIndex = game.getPlayerRolePos(Game.PlayerRoleOffsets.BIG_BLIND)
+
+                gameRoundSim(game, playerIndex, endRoundIndex)
+            }
+            GameRound.SHOWDOWN -> {
+                println("Community cards: " + game.showStreet(GameRound.SHOWDOWN))
+                for(player in game.players){
+                    if(player.playerState != PlayerState.FOLD){
+                        println(player.user.username + ": " + player.getHoleCards())
+                    }
+                }
+                //TODO "Rank Hands and select a winner. Reassign chips between players"
+                break
+            }
+            else -> {
+                println(game.showStreet(round))
+                playerIndex = game.getPlayerRolePos(Game.PlayerRoleOffsets.SMALL_BLIND)
+
+                while(game.players[playerIndex].playerState == PlayerState.FOLD){
+                    playerIndex = (playerIndex + 1) % game.players.size
+                }
+                endRoundIndex = playerIndex
+
+                gameRoundSim(game, playerIndex, endRoundIndex)
+            }
         }
     }
 
