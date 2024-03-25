@@ -7,8 +7,9 @@ import com.example.projectapp.data.Rank
 import com.example.projectapp.data.Suit
 import kotlin.random.Random
 
-class Game(var players: MutableList<Player>): TableActions {
+class Game(): TableActions {
 
+    var players: MutableList<Player> = mutableListOf()
     var potAmount: Int = 0
     var currentHighBet: Int = 0
     val smallBlind: Int = 25
@@ -33,11 +34,30 @@ class Game(var players: MutableList<Player>): TableActions {
         const val UNDER_THE_GUN = 3
     }
 
-    fun preflopRoundInit() {
+    fun playerJoin(newPlayer: Player) {
+        if(players.size < 5){
+            players.add(newPlayer)
+        }
+        else{
+            println("The game you are trying to join is currently full.")
+        }
+    }
 
-        for(player in players){
-            player.playerState = PlayerState.NONE
-            player.playerBet = 0
+    fun playerQuit(player: Player) {
+        if(players.size > 0){
+            if(players.indexOf(player) == endRoundIndex){
+                endRoundIndex = (endRoundIndex + 1) % players.size
+            }
+            players.remove(player)
+            println("Player ${player.user.username} has left the game.")
+        }
+    }
+
+    fun preflopRoundInit() {
+        players.forEach {
+            player ->
+                player.playerState = PlayerState.NONE
+                player.playerBet = 0
         }
 
         updateDealerButtonPos()
@@ -71,15 +91,8 @@ class Game(var players: MutableList<Player>): TableActions {
         endRoundIndex = currentPlayerIndex
     }
 
-    fun iterateCurrentPlayerIndex(){
+    private fun iterateCurrentPlayerIndex(){
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size
-    }
-
-    override fun updatePlayerList() {
-        TODO(
-            "If lobby is not full (capacity=5) ? add player : throw exception message" +
-                    "Remove player from list if leaving the lobby"
-        )
     }
 
     override fun generateCommunityCards() {
@@ -134,11 +147,6 @@ class Game(var players: MutableList<Player>): TableActions {
         var raiseFlag = false
 
         do{
-            if(players[currentPlayerIndex].playerState == PlayerState.FOLD) {
-                iterateCurrentPlayerIndex()
-                continue
-            }
-
             println("Select: call, raise, check, fold")
             var playerAction = readLine()!!
 
@@ -162,12 +170,15 @@ class Game(var players: MutableList<Player>): TableActions {
                 "fold" -> players[currentPlayerIndex].playerState = PlayerState.FOLD
             }
 
-            iterateCurrentPlayerIndex()
+            do{
+                iterateCurrentPlayerIndex()
+            }while(players[currentPlayerIndex].playerState == PlayerState.FOLD)
+
 
             println(toString())
-            println(players[0].toString())
-            println(players[1].toString())
-            println(players[2].toString())
+            players.forEach {
+                player ->  println(player.toString())
+            }
 
         }while((currentPlayerIndex != endRoundIndex && !raiseFlag) ||
             (players[currentPlayerIndex].playerBet != currentHighBet)

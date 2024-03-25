@@ -4,7 +4,6 @@ import com.example.projectapp.data.GameRound
 import com.example.projectapp.data.PlayingCard
 
 interface TableActions {
-    fun updatePlayerList()
     fun generateCommunityCards()
     fun generateHoleCards()
     fun showStreet(gameRound: GameRound): Any

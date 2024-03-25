@@ -69,6 +69,6 @@ class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActio
     }
 
     override fun toString(): String {
-        return "Player(chipAmount=$chipBuyInAmount, playerBet=$playerBet)"
+        return "Player(chipAmount=$chipBuyInAmount, playerBet=$playerBet), playerState=$playerState"
     }
 }

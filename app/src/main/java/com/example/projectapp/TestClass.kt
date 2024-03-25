@@ -17,44 +17,71 @@ fun main() {
     val player1 = Player(user1, chipBuyInAmount = 500)
     val player2 = Player(user2, chipBuyInAmount = 900)
     val player3 = Player(user3, chipBuyInAmount = 1000)
-    val listOfPlayers: MutableList<Player> = mutableListOf()
-
-    listOfPlayers.add(player1)
-    listOfPlayers.add(player2)
-    listOfPlayers.add(player3)
 
     //Init the game and add players
-    val game = Game(listOfPlayers)
+    val game = Game()
+
+    game.playerJoin(player1)
+    game.playerJoin(player2)
+    game.playerJoin(player3)
 
 
-    for(round in GameRound.entries){
-        var round: GameRound = round
+    while(game.players.size >= 2) {
+        game.preflopRoundInit()
 
-        if(game.players.count{it.playerState == PlayerState.FOLD} == game.players.size - 1){
-            round = GameRound.SHOWDOWN
+        println("Remove player? Y/N")
+        var removePlayer = readLine()!!
+        if(removePlayer == "Y"){
+            game.playerQuit(game.players[game.players.size - 1])
         }
 
-        when(round) {
-            GameRound.PREFLOP -> {
-                game.preflopRoundInit()
-                game.gameRoundSim()
-            }
-            GameRound.SHOWDOWN -> {
-                println("Community cards: " + game.showStreet(GameRound.SHOWDOWN))
-                for(player in game.players){
-                    if(player.playerState != PlayerState.FOLD){
-                        println(player.user.username + ": " + player.getHoleCards())
-                    }
-                }
-                //TODO "Rank Hands and select a winner. Reassign chips between players"
+        for (round in GameRound.entries) {
+            var round: GameRound = round
+
+            if(game.players.size < 2){
+                println("Not enough players")
                 break
             }
-            else -> {
-                println(game.showStreet(round))
-                game.streetRoundInit()
-                game.gameRoundSim()
+
+            var countFolds = 0
+            game.players.forEach {
+                player ->
+                    if(player.playerState != PlayerState.FOLD){
+                        player.playerState = PlayerState.NONE
+                    }
+                    else{
+                        countFolds++
+                    }
+            }
+
+            if(countFolds == game.players.size - 1){
+                round = GameRound.SHOWDOWN
+            }
+
+            when (round) {
+                GameRound.PREFLOP -> {
+                    game.gameRoundSim()
+                }
+
+                GameRound.SHOWDOWN -> {
+                    println("Community cards: " + game.showStreet(GameRound.SHOWDOWN))
+                    for (player in game.players) {
+                        if (player.playerState != PlayerState.FOLD) {
+                            println(player.user.username + ": " + player.getHoleCards())
+                        }
+                    }
+                    //TODO "Rank Hands and select a winner. Reassign chips between players"
+                    break
+                }
+
+                else -> {
+                    println(game.showStreet(round))
+                    game.streetRoundInit()
+                    game.gameRoundSim()
+                }
             }
         }
+
     }
 
 }
