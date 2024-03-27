@@ -4,7 +4,6 @@ import com.example.projectapp.data.GameRound
 import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
-import com.example.projectapp.data.Tables
 
 class Game(): TableActions {
 
@@ -14,6 +13,7 @@ class Game(): TableActions {
     val smallBlind: Int = 25
     val bigBlind: Int = 50
     private var communityCards: MutableList<PlayingCard> = mutableListOf()
+    private var cardCombinations: MutableList<PlayingCard> = mutableListOf()
     var dealerButtonPos: Int = -1
     var currentPlayerIndex: Int = -1
     var endRoundIndex: Int = -1
@@ -25,6 +25,7 @@ class Game(): TableActions {
         const val FLOP_CARDS_END = 3
         const val TURN_CARD_INDEX = 3
         const val RIVER_CARD_INDEX = 4
+        const val HAND_COMBINATION = 3
     }
 
     object PlayerRoleOffsets {
@@ -56,6 +57,7 @@ class Game(): TableActions {
         players.forEach {
             player ->
                 player.playerState = PlayerState.NONE
+                player.playerHandRank = HandRankings.HIGH_CARD
                 player.playerBet = 0
         }
 
@@ -133,12 +135,58 @@ class Game(): TableActions {
         return (dealerButtonPos + playerRoleOffset) % players.size
     }
 
-    fun rankCardHands(cards: MutableList<PlayingCard>): HandRankings {
-        //TODO("Loop through players and compare highest hand of each player")
-        val handEvaluator = CardHandEvaluator()
-        handEvaluator.setCards(cards)
+    private fun combinationUtil(
+        comCards: MutableList<PlayingCard>, tmpCardComb: Array<PlayingCard?>, start: Int,
+        end: Int, index: Int, r: Int, handEvaluator: CardHandEvaluator, player: Player
+    ) {
 
-        return handEvaluator.getHandRanking()
+        if (index == r) {
+            for (j in 0 until r) {
+                tmpCardComb[j]?.let { cardCombinations.add(it) }
+            }
+            cardCombinations.add(player.getHoleCards().first)
+            cardCombinations.add(player.getHoleCards().second)
+
+            val combinationHandRank = handEvaluator.getHandRanking(cardCombinations)
+            if(combinationHandRank.ordinal < player.playerHandRank.ordinal){
+                player.playerHandRank = combinationHandRank
+            }
+            cardCombinations.clear()
+            return
+        }
+
+        var i = start
+        while (i <= end && end - i + 1 >= r - index) {
+            tmpCardComb[index] = comCards[i]
+            combinationUtil(
+                comCards, tmpCardComb, i + 1, end,
+                index + 1, r, handEvaluator, player
+            )
+            i++
+        }
+    }
+
+    fun rankCardHands(): Player {
+        //TODO("Compare player hands (handle hands with same rank)")
+        val tmpCardComb = arrayOfNulls<PlayingCard>(CardConstants.HAND_COMBINATION)
+        val handEvaluator = CardHandEvaluator()
+        var winner: Player = players[0]
+        players.forEach {
+            player ->
+                if(player.playerState != PlayerState.FOLD) {
+                    combinationUtil(
+                        communityCards, tmpCardComb, 0,
+                        CardConstants.COMMUNITY_CARDS - 1, 0,
+                        CardConstants.HAND_COMBINATION, handEvaluator, player
+                    )
+                }
+
+                if(player.playerHandRank.ordinal < winner.playerHandRank.ordinal){
+                    winner = player
+                }
+        }
+
+        return winner
     }
 
     override fun toString(): String {

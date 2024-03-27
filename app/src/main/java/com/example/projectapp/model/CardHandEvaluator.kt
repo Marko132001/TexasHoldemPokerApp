@@ -6,14 +6,8 @@ import com.example.projectapp.data.Tables
 
 class CardHandEvaluator() {
 
-    private var cards: MutableList<PlayingCard> = mutableListOf()
-
-    fun setCards(cards: MutableList<PlayingCard>){
-        this.cards = cards
-    }
-
-    fun getHandRanking(): HandRankings {
-        val handRankValue = evaluate()
+    fun getHandRanking(cards: MutableList<PlayingCard>): HandRankings {
+        val handRankValue = evaluate(cards)
 
         if(handRankValue > 6185)
             return HandRankings.HIGH_CARD
@@ -37,7 +31,7 @@ class CardHandEvaluator() {
         return HandRankings.ROYAL_FLUSH
     }
 
-    private fun evaluate(): Int {
+    private fun evaluate(cards: MutableList<PlayingCard>): Int {
         // Binary representations of each card
         val c1: Int = cards[0].value
         val c2: Int = cards[1].value

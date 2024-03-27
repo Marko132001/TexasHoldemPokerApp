@@ -10,16 +10,15 @@ import kotlin.system.exitProcess
 
 
 fun main() {
-    //Create user accounts
+
     val user1 = User("User1")
     val user2 = User("User2")
     val user3 = User("User3")
-    //Init players for the game
+
     val player1 = Player(user1, chipBuyInAmount = 500)
     val player2 = Player(user2, chipBuyInAmount = 900)
     val player3 = Player(user3, chipBuyInAmount = 1000)
 
-    //Init the game and add players
     val game = Game()
 
     game.playerJoin(player1)
@@ -28,21 +27,7 @@ fun main() {
 
     game.generateHoleCards()
     game.generateCommunityCards()
-    val card1 = PlayingCard.ACE_OF_SPADES
-    val card2 = PlayingCard.TWO_OF_SPADES
-    val card3 = PlayingCard.THREE_OF_SPADES
-    val card4 = PlayingCard.FOUR_OF_SPADES
-    val card5 = PlayingCard.FIVE_OF_DIAMONDS
-    val cards = mutableListOf<PlayingCard>()
-    cards.add(card1)
-    cards.add(card2)
-    cards.add(card3)
-    cards.add(card4)
-    cards.add(card5)
-    println(cards)
-    println(game.rankCardHands(cards))
 
-    exitProcess(1)
 
     while(game.players.size >= 2) {
         game.preflopRoundInit()
@@ -82,13 +67,16 @@ fun main() {
                 }
 
                 GameRound.SHOWDOWN -> {
+                    val winner = game.rankCardHands()
+                    winner.assignChips(game.potAmount)
+
                     println("Community cards: " + game.showStreet(GameRound.SHOWDOWN))
                     for (player in game.players) {
                         if (player.playerState != PlayerState.FOLD) {
-                            println(player.user.username + ": " + player.getHoleCards())
+                            println(player.user.username + ": " + player.getHoleCards() + " " + player.playerHandRank)
                         }
                     }
-                    //TODO "Rank Hands and select a winner. Reassign chips between players"
+
                     break
                 }
 
