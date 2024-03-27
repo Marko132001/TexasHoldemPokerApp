@@ -1,17 +1,17 @@
 package com.example.projectapp.data
 
 enum class Rank(val value: Int, val label: String) {
-    TWO(2, "2"),
-    THREE(3, "3"),
-    FOUR(4, "4"),
-    FIVE(5, "5"),
-    SIX(6, "6"),
-    SEVEN(7, "7"),
-    EIGHT(8, "8"),
-    NINE(9, "9"),
-    TEN(10, "10"),
-    JACK(11, "jack"),
-    QUEEN(12, "queen"),
-    KING(13, "king"),
-    ACE(14, "ace")
+    TWO(0, "2"),
+    THREE(1, "3"),
+    FOUR(2, "4"),
+    FIVE(3, "5"),
+    SIX(4, "6"),
+    SEVEN(5, "7"),
+    EIGHT(6, "8"),
+    NINE(7, "9"),
+    TEN(8, "10"),
+    JACK(9, "jack"),
+    QUEEN(10, "queen"),
+    KING(11, "king"),
+    ACE(12, "ace")
 }

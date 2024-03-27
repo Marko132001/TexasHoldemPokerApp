@@ -6,6 +6,7 @@ import com.example.projectapp.data.PlayingCard
 import com.example.projectapp.model.Game
 import com.example.projectapp.model.Player
 import com.example.projectapp.model.User
+import kotlin.system.exitProcess
 
 
 fun main() {
@@ -25,6 +26,23 @@ fun main() {
     game.playerJoin(player2)
     game.playerJoin(player3)
 
+    game.generateHoleCards()
+    game.generateCommunityCards()
+    val card1 = PlayingCard.ACE_OF_SPADES
+    val card2 = PlayingCard.TWO_OF_SPADES
+    val card3 = PlayingCard.THREE_OF_SPADES
+    val card4 = PlayingCard.FOUR_OF_SPADES
+    val card5 = PlayingCard.FIVE_OF_DIAMONDS
+    val cards = mutableListOf<PlayingCard>()
+    cards.add(card1)
+    cards.add(card2)
+    cards.add(card3)
+    cards.add(card4)
+    cards.add(card5)
+    println(cards)
+    println(game.rankCardHands(cards))
+
+    exitProcess(1)
 
     while(game.players.size >= 2) {
         game.preflopRoundInit()

@@ -1,11 +1,10 @@
 package com.example.projectapp.model
 
 import com.example.projectapp.data.GameRound
+import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
-import com.example.projectapp.data.Rank
-import com.example.projectapp.data.Suit
-import kotlin.random.Random
+import com.example.projectapp.data.Tables
 
 class Game(): TableActions {
 
@@ -134,9 +133,12 @@ class Game(): TableActions {
         return (dealerButtonPos + playerRoleOffset) % players.size
     }
 
+    fun rankCardHands(cards: MutableList<PlayingCard>): HandRankings {
+        //TODO("Loop through players and compare highest hand of each player")
+        val handEvaluator = CardHandEvaluator()
+        handEvaluator.setCards(cards)
 
-    override fun rankCardHands() {
-        TODO("Implement the appropriate card ranking algorithm")
+        return handEvaluator.getHandRanking()
     }
 
     override fun toString(): String {
@@ -153,7 +155,6 @@ class Game(): TableActions {
             when(playerAction){
                 "call" -> {
                     updatePot(players[currentPlayerIndex].call(currentHighBet))
-                    players[currentPlayerIndex].playerState = PlayerState.CALL
                 }
                 "raise" -> {
                     println("Enter raise amount: ")
@@ -163,11 +164,10 @@ class Game(): TableActions {
                         .raise(currentHighBet, raiseAmount.toInt())
                     )
                     currentHighBet = players[currentPlayerIndex].playerBet
-                    players[currentPlayerIndex].playerState = PlayerState.RAISE
                     raiseFlag = true
                 }
-                "check" -> players[currentPlayerIndex].playerState = PlayerState.CHECK
-                "fold" -> players[currentPlayerIndex].playerState = PlayerState.FOLD
+                "check" -> players[currentPlayerIndex].check()
+                "fold" -> players[currentPlayerIndex].fold()
             }
 
             do{

@@ -10,6 +10,5 @@ interface TableActions {
     fun updatePot(playerBet: Int)
     fun updateDealerButtonPos()
     fun getPlayerRolePos(playerRoleOffset: Int): Int
-    fun rankCardHands()
 
 }

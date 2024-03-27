@@ -64,5 +64,9 @@ enum class PlayingCard(val rank: Rank, val suit: Suit) {
     KING_OF_CLUBS(Rank.KING, Suit.CLUBS),
     KING_OF_HEARTS(Rank.KING, Suit.HEARTS),
     KING_OF_DIAMONDS(Rank.KING, Suit.DIAMONDS),
-    KING_OF_SPADES(Rank.KING, Suit.SPADES)
+    KING_OF_SPADES(Rank.KING, Suit.SPADES);
+
+    val value: Int = (1 shl (rank.value + 16)) or suit.value or (rank.value shl 8) or
+            Tables.PRIMES[rank.value].toInt()
+
 }

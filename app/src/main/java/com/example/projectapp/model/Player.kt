@@ -32,6 +32,7 @@ class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActio
             return allInCall
         }
 
+        playerState = PlayerState.CALL
         playerBet += betDifference
         chipBuyInAmount -= betDifference
 
@@ -39,6 +40,7 @@ class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActio
     }
 
     override fun raise(currentHighBet: Int, raiseAmount: Int): Int {
+        playerState = PlayerState.RAISE
         val betDifference = (currentHighBet - playerBet)
         playerBet += betDifference + raiseAmount
         chipBuyInAmount -= betDifference + raiseAmount
