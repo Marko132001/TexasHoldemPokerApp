@@ -3,6 +3,7 @@ package com.example.projectapp
 import com.example.projectapp.data.GameRound
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
+import com.example.projectapp.model.CardHandEvaluator
 import com.example.projectapp.model.Game
 import com.example.projectapp.model.Player
 import com.example.projectapp.model.User
@@ -24,9 +25,6 @@ fun main() {
     game.playerJoin(player1)
     game.playerJoin(player2)
     game.playerJoin(player3)
-
-    game.generateHoleCards()
-    game.generateCommunityCards()
 
 
     while(game.players.size >= 2) {
@@ -67,8 +65,15 @@ fun main() {
                 }
 
                 GameRound.SHOWDOWN -> {
-                    val winner = game.rankCardHands()
-                    winner.assignChips(game.potAmount)
+                    val winner: MutableList<Player> = game.rankCardHands()
+                    if(winner.size == 1){
+                        winner[0].assignChips(game.potAmount)
+                    }
+                    else{
+                        var splitPot = game.potAmount / 2
+                        winner[0].assignChips(splitPot)
+                        winner[1].assignChips(splitPot)
+                    }
 
                     println("Community cards: " + game.showStreet(GameRound.SHOWDOWN))
                     for (player in game.players) {

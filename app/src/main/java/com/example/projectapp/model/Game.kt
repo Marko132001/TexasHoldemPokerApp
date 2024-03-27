@@ -57,14 +57,15 @@ class Game(): TableActions {
         players.forEach {
             player ->
                 player.playerState = PlayerState.NONE
-                player.playerHandRank = HandRankings.HIGH_CARD
+                player.playerHandRank = Pair(HandRankings.HIGH_CARD, 7462)
                 player.playerBet = 0
         }
 
         updateDealerButtonPos()
 
-        generateHoleCards()
-        generateCommunityCards()
+        val cards: List<PlayingCard> = shuffleCardsDeck()
+        generateHoleCards(cards)
+        generateCommunityCards(cards)
 
         currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.UNDER_THE_GUN)
         endRoundIndex = getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND)
@@ -96,14 +97,17 @@ class Game(): TableActions {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size
     }
 
-    override fun generateCommunityCards() {
-        communityCards = PlayingCard.entries.shuffled()
+    private fun shuffleCardsDeck(): List<PlayingCard> {
+        return PlayingCard.entries.shuffled()
+    }
+
+    override fun generateCommunityCards(cards: List<PlayingCard>) {
+        communityCards = cards.drop(CardConstants.HOLE_CARDS * players.size)
             .take(CardConstants.COMMUNITY_CARDS).toMutableList()
     }
 
-    override fun generateHoleCards() {
-        val generatedHoleCards = PlayingCard.entries
-            .shuffled().take(CardConstants.HOLE_CARDS * players.size)
+    override fun generateHoleCards(cards: List<PlayingCard>) {
+        val generatedHoleCards = cards.take(CardConstants.HOLE_CARDS * players.size)
 
         for((index, player) in players.withIndex()){
             player.assignHoleCards(
@@ -148,7 +152,7 @@ class Game(): TableActions {
             cardCombinations.add(player.getHoleCards().second)
 
             val combinationHandRank = handEvaluator.getHandRanking(cardCombinations)
-            if(combinationHandRank.ordinal < player.playerHandRank.ordinal){
+            if(combinationHandRank.second < player.playerHandRank.second){
                 player.playerHandRank = combinationHandRank
             }
             cardCombinations.clear()
@@ -166,11 +170,10 @@ class Game(): TableActions {
         }
     }
 
-    fun rankCardHands(): Player {
-        //TODO("Compare player hands (handle hands with same rank)")
+    fun rankCardHands(): MutableList<Player> {
         val tmpCardComb = arrayOfNulls<PlayingCard>(CardConstants.HAND_COMBINATION)
         val handEvaluator = CardHandEvaluator()
-        var winner: Player = players[0]
+        val winner: MutableList<Player> = mutableListOf(players[0])
         players.forEach {
             player ->
                 if(player.playerState != PlayerState.FOLD) {
@@ -181,8 +184,12 @@ class Game(): TableActions {
                     )
                 }
 
-                if(player.playerHandRank.ordinal < winner.playerHandRank.ordinal){
-                    winner = player
+                if(player.playerHandRank.second < winner[0].playerHandRank.second){
+                    winner.clear()
+                    winner.add(player)
+                }
+                else if(player.playerHandRank.second == winner[0].playerHandRank.second){
+                    winner.add(player)
                 }
         }
 

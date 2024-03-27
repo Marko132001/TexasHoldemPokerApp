@@ -7,7 +7,7 @@ import com.example.projectapp.data.PlayingCard
 class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActions {
 
     private lateinit var holeCards: Pair<PlayingCard, PlayingCard>
-    var playerHandRank: HandRankings = HandRankings.HIGH_CARD
+    var playerHandRank: Pair<HandRankings, Int> = Pair(HandRankings.HIGH_CARD, 7462)
     var playerState: PlayerState = PlayerState.NONE
     var playerBet: Int = 0
 

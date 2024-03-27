@@ -6,29 +6,29 @@ import com.example.projectapp.data.Tables
 
 class CardHandEvaluator() {
 
-    fun getHandRanking(cards: MutableList<PlayingCard>): HandRankings {
+    fun getHandRanking(cards: MutableList<PlayingCard>): Pair<HandRankings, Int> {
         val handRankValue = evaluate(cards)
 
         if(handRankValue > 6185)
-            return HandRankings.HIGH_CARD
+            return Pair(HandRankings.HIGH_CARD, handRankValue)
         else if (handRankValue > 3325)
-            return HandRankings.ONE_PAIR
+            return Pair(HandRankings.ONE_PAIR, handRankValue)
         else if (handRankValue > 2467)
-            return HandRankings.TWO_PAIR
+            return Pair(HandRankings.TWO_PAIR, handRankValue)
         else if (handRankValue > 1609)
-            return HandRankings.THREE_OF_A_KIND
+            return Pair(HandRankings.THREE_OF_A_KIND, handRankValue)
         else if (handRankValue > 1599)
-            return HandRankings.STRAIGHT
+            return Pair(HandRankings.STRAIGHT, handRankValue)
         else if (handRankValue > 322)
-            return HandRankings.FLUSH
+            return Pair(HandRankings.FLUSH, handRankValue)
         else if (handRankValue > 166)
-            return HandRankings.FULL_HOUSE
+            return Pair(HandRankings.FULL_HOUSE, handRankValue)
         else if (handRankValue > 10)
-            return HandRankings.FOUR_OF_A_KIND
+            return Pair(HandRankings.FOUR_OF_A_KIND, handRankValue)
         else if (handRankValue > 1)
-            return HandRankings.STRAIGHT_FLUSH
+            return Pair(HandRankings.STRAIGHT_FLUSH, handRankValue)
 
-        return HandRankings.ROYAL_FLUSH
+        return Pair(HandRankings.ROYAL_FLUSH, handRankValue)
     }
 
     private fun evaluate(cards: MutableList<PlayingCard>): Int {
