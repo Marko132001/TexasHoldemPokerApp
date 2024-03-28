@@ -4,7 +4,7 @@ import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
 
-class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActions {
+class Player(val user: User, private var chipBuyInAmount: Int) {
 
     private lateinit var holeCards: Pair<PlayingCard, PlayingCard>
     var playerHandRank: Pair<HandRankings, Int> = Pair(HandRankings.HIGH_CARD, 7462)
@@ -24,7 +24,7 @@ class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActio
         chipBuyInAmount += chipAmount
     }
 
-    override fun call(currentHighBet: Int): Int {
+    fun call(currentHighBet: Int): Int {
         val betDifference = currentHighBet - playerBet
         if(betDifference >= chipBuyInAmount){
             playerState = PlayerState.ALL_IN
@@ -42,7 +42,7 @@ class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActio
         return betDifference
     }
 
-    override fun raise(currentHighBet: Int, raiseAmount: Int): Int {
+    fun raise(currentHighBet: Int, raiseAmount: Int): Int {
         playerState = PlayerState.RAISE
         val betDifference = (currentHighBet - playerBet)
         playerBet += betDifference + raiseAmount
@@ -51,26 +51,26 @@ class Player(val user: User, private var chipBuyInAmount: Int): PlayerRoundActio
         return betDifference + raiseAmount
     }
 
-    override fun paySmallBlind(smallBlindValue: Int): Int {
+    fun check() {
+        playerState = PlayerState.CHECK
+    }
+
+    fun fold() {
+        playerState = PlayerState.FOLD
+    }
+
+    fun paySmallBlind(smallBlindValue: Int): Int {
         chipBuyInAmount -= smallBlindValue
         playerBet = smallBlindValue
 
         return smallBlindValue
     }
 
-    override fun payBigBlind(bigBlindValue: Int): Int {
+    fun payBigBlind(bigBlindValue: Int): Int {
         chipBuyInAmount -= bigBlindValue
         playerBet = bigBlindValue
 
         return bigBlindValue
-    }
-
-    override fun check() {
-        playerState = PlayerState.CHECK
-    }
-
-    override fun fold() {
-        playerState = PlayerState.FOLD
     }
 
     override fun toString(): String {

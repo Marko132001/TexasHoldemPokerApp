@@ -5,18 +5,17 @@ import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
 
-class Game(): TableActions {
+class Game() {
 
     var players: MutableList<Player> = mutableListOf()
     var potAmount: Int = 0
-    var currentHighBet: Int = 0
-    val smallBlind: Int = 25
-    val bigBlind: Int = 50
+    private var currentHighBet: Int = 0
+    private val smallBlind: Int = 25
+    private val bigBlind: Int = 50
     private var communityCards: MutableList<PlayingCard> = mutableListOf()
-    private var cardCombinations: MutableList<PlayingCard> = mutableListOf()
-    var dealerButtonPos: Int = -1
-    var currentPlayerIndex: Int = -1
-    var endRoundIndex: Int = -1
+    private var dealerButtonPos: Int = -1
+    private var currentPlayerIndex: Int = -1
+    private var endRoundIndex: Int = -1
 
     object CardConstants {
         const val COMMUNITY_CARDS = 5
@@ -47,6 +46,9 @@ class Game(): TableActions {
         if(players.size > 0){
             if(players.indexOf(player) == endRoundIndex){
                 endRoundIndex = (endRoundIndex + 1) % players.size
+            }
+            if(players.indexOf(player) == currentPlayerIndex){
+                iterateCurrentPlayerIndex()
             }
             players.remove(player)
             println("Player ${player.user.username} has left the game.")
@@ -93,20 +95,16 @@ class Game(): TableActions {
         endRoundIndex = currentPlayerIndex
     }
 
-    private fun iterateCurrentPlayerIndex(){
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size
-    }
-
     private fun shuffleCardsDeck(): List<PlayingCard> {
         return PlayingCard.entries.shuffled()
     }
 
-    override fun generateCommunityCards(cards: List<PlayingCard>) {
+    private fun generateCommunityCards(cards: List<PlayingCard>) {
         communityCards = cards.drop(CardConstants.HOLE_CARDS * players.size)
             .take(CardConstants.COMMUNITY_CARDS).toMutableList()
     }
 
-    override fun generateHoleCards(cards: List<PlayingCard>) {
+    private fun generateHoleCards(cards: List<PlayingCard>) {
         val generatedHoleCards = cards.take(CardConstants.HOLE_CARDS * players.size)
 
         for((index, player) in players.withIndex()){
@@ -116,7 +114,7 @@ class Game(): TableActions {
         }
     }
 
-    override fun showStreet(gameRound: GameRound): Any {
+    fun showStreet(gameRound: GameRound): Any {
         return when(gameRound){
             GameRound.FLOP -> communityCards
                 .subList(CardConstants.FLOP_CARDS_START, CardConstants.FLOP_CARDS_END)
@@ -127,21 +125,26 @@ class Game(): TableActions {
         }
     }
 
-    override fun updatePot(playerBet: Int) {
+    private fun updatePot(playerBet: Int) {
         potAmount += playerBet
     }
 
-    override fun updateDealerButtonPos() {
+    private fun iterateCurrentPlayerIndex(){
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+    }
+
+    private fun updateDealerButtonPos() {
         dealerButtonPos = (dealerButtonPos + 1) % players.size
     }
 
-    override fun getPlayerRolePos(playerRoleOffset: Int): Int {
+    private fun getPlayerRolePos(playerRoleOffset: Int): Int {
         return (dealerButtonPos + playerRoleOffset) % players.size
     }
 
     private fun combinationUtil(
         comCards: MutableList<PlayingCard>, tmpCardComb: Array<PlayingCard?>, start: Int,
-        end: Int, index: Int, r: Int, handEvaluator: CardHandEvaluator, player: Player
+        end: Int, index: Int, r: Int, handEvaluator: CardHandEvaluator,
+        player: Player, cardCombinations: MutableList<PlayingCard>
     ) {
 
         if (index == r) {
@@ -164,7 +167,7 @@ class Game(): TableActions {
             tmpCardComb[index] = comCards[i]
             combinationUtil(
                 comCards, tmpCardComb, i + 1, end,
-                index + 1, r, handEvaluator, player
+                index + 1, r, handEvaluator, player, cardCombinations
             )
             i++
         }
@@ -172,6 +175,7 @@ class Game(): TableActions {
 
     fun rankCardHands(): MutableList<Player> {
         val tmpCardComb = arrayOfNulls<PlayingCard>(CardConstants.HAND_COMBINATION)
+        val cardCombinations = mutableListOf<PlayingCard>()
         val handEvaluator = CardHandEvaluator()
         val winner: MutableList<Player> = mutableListOf(players[0])
         players.forEach {
@@ -180,7 +184,8 @@ class Game(): TableActions {
                     combinationUtil(
                         communityCards, tmpCardComb, 0,
                         CardConstants.COMMUNITY_CARDS - 1, 0,
-                        CardConstants.HAND_COMBINATION, handEvaluator, player
+                        CardConstants.HAND_COMBINATION, handEvaluator,
+                        player, cardCombinations
                     )
                 }
 
@@ -194,10 +199,6 @@ class Game(): TableActions {
         }
 
         return winner
-    }
-
-    override fun toString(): String {
-        return "Game(potAmount=$potAmount, currentHighBet=$currentHighBet)"
     }
 
     fun gameRoundSim() {
@@ -239,5 +240,9 @@ class Game(): TableActions {
             (players[currentPlayerIndex].playerBet != currentHighBet)
         )
 
+    }
+
+    override fun toString(): String {
+        return "Game(potAmount=$potAmount, currentHighBet=$currentHighBet)"
     }
 }
