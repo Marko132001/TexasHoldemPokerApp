@@ -8,7 +8,7 @@ import com.example.projectapp.data.PlayingCard
 class Game() {
 
     var players: MutableList<Player> = mutableListOf()
-    var potAmount: Int = 0
+    private var potAmount: Int = 0
     private var currentHighBet: Int = 0
     private val smallBlind: Int = 25
     private val bigBlind: Int = 50
@@ -84,6 +84,32 @@ class Game() {
         )
         currentHighBet = bigBlind
 
+    }
+
+    fun nextRoundInit(round: GameRound):GameRound {
+
+        if(players.size < 2){
+            //TODO: Handle Exception -> print message and redirect to home screen
+            throw Exception("Not enough players")
+        }
+
+        var countFolds = 0
+
+        players.forEach {
+                player ->
+            if(player.playerState != PlayerState.FOLD){
+                player.playerState = PlayerState.NONE
+            }
+            else{
+                countFolds++
+            }
+        }
+
+        if(countFolds == players.size - 1){
+            return GameRound.SHOWDOWN
+        }
+
+        return round
     }
 
     fun streetRoundInit(){
@@ -199,6 +225,17 @@ class Game() {
         }
 
         return winner
+    }
+
+    fun assignChipsToWinner(winner: MutableList<Player>) {
+        if(winner.size == 1){
+            winner[0].assignChips(potAmount)
+        }
+        else{
+            val splitPot = potAmount / 2
+            winner[0].assignChips(splitPot)
+            winner[1].assignChips(splitPot)
+        }
     }
 
     fun gameRoundSim() {

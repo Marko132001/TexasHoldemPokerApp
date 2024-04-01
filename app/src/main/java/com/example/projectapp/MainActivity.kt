@@ -1,45 +1,45 @@
 package com.example.projectapp
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.res.ResourcesCompat
+import androidx.constraintlayout.compose.ConstrainedLayoutReference
+import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.projectapp.data.PlayingCard
+import com.example.projectapp.model.Game
+import com.example.projectapp.model.Player
+import com.example.projectapp.model.User
 
 
 class MainActivity : ComponentActivity() {
@@ -55,6 +55,24 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun initGame() {
+
+    val user1 = User("User1")
+    val user2 = User("User2")
+    val user3 = User("User3")
+
+    val player1 = Player(user1, chipBuyInAmount = 500)
+    val player2 = Player(user2, chipBuyInAmount = 900)
+    val player3 = Player(user3, chipBuyInAmount = 1000)
+
+    val game = Game()
+
+    game.playerJoin(player1)
+    game.playerJoin(player2)
+    game.playerJoin(player3)
+
+}
+
 @Composable
 fun PokerApp(){
 
@@ -62,15 +80,121 @@ fun PokerApp(){
     val activity = context as Activity
     activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
+    val cards: MutableList<PlayingCard> = mutableListOf(
+        PlayingCard.TEN_OF_SPADES,
+        PlayingCard.TWO_OF_DIAMONDS,
+        PlayingCard.FIVE_OF_SPADES,
+        PlayingCard.ACE_OF_HEARTS,
+        PlayingCard.QUEEN_OF_SPADES
+    )
+
+    val cardIds: MutableList<Int> = mutableListOf()
+
+    cards.forEach { playingCard ->
+        val cardLabel = playingCard.suit.label + "_" + playingCard.rank.label
+        val cardId: Int = remember(cardLabel) {
+            context.resources.getIdentifier(
+                cardLabel,
+                "drawable",
+                context.packageName
+            )
+        }
+
+        cardIds.add(cardId)
+    }
+
     TableBackground()
-    Column(modifier = Modifier
-        .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    ConstraintLayout(
+        modifier = Modifier.fillMaxSize()
     ) {
-        CardHandOpponent()
-        Spacer(modifier = Modifier.weight(1f))
-        CardHandPlayer(context)
+        val (communityCards, playerHand, opponentHand1,
+            opponentHand2, opponentHand3, opponentHand4,
+            actionButtons
+        ) = createRefs()
+
+        LazyRow(modifier = Modifier
+            .constrainAs(communityCards){
+                centerHorizontallyTo(parent)
+                centerVerticallyTo(parent)
+            }
+        ) {
+            items(cardIds) { cardId ->
+                Image(
+                    modifier = Modifier
+                        .size(80.dp),
+                    painter = painterResource(id = cardId),
+                    contentDescription = null
+                )
+            }
+        }
+
+        CardHandPlayer(context,
+            modifier = Modifier.constrainAs(playerHand){
+                centerHorizontallyTo(parent)
+                bottom.linkTo(parent.bottom, margin = 10.dp)
+            }
+        )
+        CardHandOpponent(
+            modifier = Modifier.constrainAs(opponentHand1){
+                centerVerticallyTo(communityCards)
+                end.linkTo(parent.end, margin = 40.dp)
+            }
+        )
+        CardHandOpponent(
+            modifier = Modifier.constrainAs(opponentHand2){
+                centerVerticallyTo(communityCards)
+                start.linkTo(parent.start, margin = 20.dp)
+            }
+        )
+        CardHandOpponent(
+            modifier = Modifier.constrainAs(opponentHand3){
+                top.linkTo(parent.top, margin = 20.dp)
+                end.linkTo(communityCards.start)
+            }
+        )
+        CardHandOpponent(
+            modifier = Modifier.constrainAs(opponentHand4){
+                top.linkTo(parent.top, margin = 20.dp)
+                start.linkTo(communityCards.end)
+            }
+        )
+
+        Row(
+            modifier = Modifier.constrainAs(actionButtons){
+                bottom.linkTo(parent.bottom)
+                end.linkTo(parent.end, margin = 10.dp)
+            },
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ){
+            Button(
+                onClick = { /*TODO*/ },
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray
+                )
+            ) {
+                Text(text = "FOLD")
+            }
+            Button(
+                onClick = { /*TODO*/ },
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray
+                )
+            ) {
+                Text(text = "CHECK")
+            }
+            Button(
+                onClick = { /*TODO*/ },
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray
+                )
+            ) {
+                Text(text = "RAISE")
+            }
+        }
+
     }
 
 }
@@ -89,53 +213,48 @@ fun TableBackground(){
 
 
 @Composable
-fun CardHandPlayer(context: Context){
+fun CardHandPlayer(context: Context, modifier: Modifier){
 
     val firstCardLabel: String =
-        PlayingCard.TEN_OF_DIAMONDS.suit.label + "_" + PlayingCard.TEN_OF_DIAMONDS.rank.label
+        PlayingCard.TEN_OF_SPADES.suit.label + "_" + PlayingCard.TEN_OF_SPADES.rank.label
     val secondCardLabel: String =
         PlayingCard.KING_OF_CLUBS.suit.label + "_" + PlayingCard.KING_OF_CLUBS.rank.label
 
-    //val context = LocalContext.current
-    /* Alternative with remember
-    val drawableId = remember(name) {
+
+    val firstCardId: Int = remember(firstCardLabel) {
         context.resources.getIdentifier(
-            name,
+            firstCardLabel,
             "drawable",
             context.packageName
         )
     }
-    */
-    val firstCardId: Int = context.resources.getIdentifier(
-        firstCardLabel,
-        "drawable",
-        context.packageName
-    )
 
-    val secondCardId: Int = context.resources.getIdentifier(
-        secondCardLabel,
-        "drawable",
-        context.packageName
-    )
+    val secondCardId: Int = remember(secondCardLabel) {
+        context.resources.getIdentifier(
+            secondCardLabel,
+            "drawable",
+            context.packageName
+        )
+    }
 
     val firstCard = painterResource(id = firstCardId)
     val secondCard = painterResource(id = secondCardId)
 
-    Box(contentAlignment = Alignment.BottomCenter) {
+    Box(
+        modifier = modifier
+    ) {
         Image(
             modifier = Modifier
-                .size(90.dp)
-                .absolutePadding(bottom = 20.dp),
+                .size(80.dp),
             painter = firstCard,
             contentDescription = null
         )
 
         Image(
             modifier = Modifier
-                .size(90.dp)
+                .size(80.dp)
                 .absoluteOffset(x = 45.dp, y = 5.dp)
-                .rotate(10.0F)
-                .absolutePadding(bottom = 20.dp),
+                .rotate(10.0F),
             painter = secondCard,
             contentDescription = null
         )
@@ -143,74 +262,28 @@ fun CardHandPlayer(context: Context){
 }
 
 @Composable
-fun CardHandOpponent(){
+fun CardHandOpponent(modifier: Modifier){
     val opponentCard = painterResource(R.drawable.blue2)
-    Box(contentAlignment = Alignment.BottomCenter) {
-        Image(
-            modifier = Modifier
-                .size(90.dp)
-                .absolutePadding(bottom = 20.dp),
-            painter = opponentCard,
-            contentDescription = null
-        )
-
-        Image(
-            modifier = Modifier
-                .size(90.dp)
-                .absoluteOffset(x = 45.dp, y = 5.dp)
-                .rotate(10.0F)
-                .absolutePadding(bottom = 20.dp),
-            painter = opponentCard,
-            contentDescription = null
-        )
-    }
-    /*
-    Box(contentAlignment = Alignment.BottomCenter) {
-        Image(
-            modifier = Modifier
-                .size(90.dp)
-                .rotate(10.0F)
-                .absolutePadding(top = 20.dp),
-            painter = opponentCard,
-            contentDescription = null
-        )
-
-        Image(
-            modifier = Modifier
-                .size(90.dp)
-                .absoluteOffset(x = 45.dp, y = 5.dp)
-                .absolutePadding(top = 20.dp),
-            painter = opponentCard,
-            contentDescription = null
-        )
-    }
-
-     */
-}
-
-@Composable
-fun CommunityCards(){
-    Row {
-
-    }
-}
-
-/*
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PokerAppPreview() {
-    TableBackground()
-    Column(modifier = Modifier
-        .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = modifier
     ) {
-        CardHandOpponent()
-        Spacer(modifier = Modifier.weight(1f))
-        CardHandPlayer()
+        Image(
+            modifier = Modifier
+                .size(40.dp),
+            painter = opponentCard,
+            contentDescription = null
+        )
+
+        Image(
+            modifier = Modifier
+                .size(40.dp)
+                .absoluteOffset(x = 20.dp)
+                .rotate(4.0F),
+            painter = opponentCard,
+            contentDescription = null
+        )
     }
 }
-*/
 
 
 

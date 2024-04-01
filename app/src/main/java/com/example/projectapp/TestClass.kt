@@ -34,43 +34,14 @@ fun main() {
         }
 
         for (round in GameRound.entries) {
-            var round: GameRound = round
 
-            if(game.players.size < 2){
-                println("Not enough players")
-                break
-            }
-
-            var countFolds = 0
-            game.players.forEach {
-                player ->
-                    if(player.playerState != PlayerState.FOLD){
-                        player.playerState = PlayerState.NONE
-                    }
-                    else{
-                        countFolds++
-                    }
-            }
-
-            if(countFolds == game.players.size - 1){
-                round = GameRound.SHOWDOWN
-            }
-
-            when (round) {
+            when (game.nextRoundInit(round)) {
                 GameRound.PREFLOP -> {
                     game.gameRoundSim()
                 }
 
                 GameRound.SHOWDOWN -> {
-                    val winner: MutableList<Player> = game.rankCardHands()
-                    if(winner.size == 1){
-                        winner[0].assignChips(game.potAmount)
-                    }
-                    else{
-                        var splitPot = game.potAmount / 2
-                        winner[0].assignChips(splitPot)
-                        winner[1].assignChips(splitPot)
-                    }
+                    game.assignChipsToWinner(game.rankCardHands())
 
                     println("Community cards: " + game.showStreet(GameRound.SHOWDOWN))
                     for (player in game.players) {
