@@ -69,4 +69,6 @@ enum class PlayingCard(val rank: Rank, val suit: Suit) {
     val value: Int = (1 shl (rank.value + 16)) or suit.value or (rank.value shl 8) or
             Tables.PRIMES[rank.value].toInt()
 
+    val cardLabel: String = suit.label + "_" + rank.label
+
 }

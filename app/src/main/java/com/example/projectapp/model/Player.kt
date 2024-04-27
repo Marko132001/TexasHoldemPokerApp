@@ -4,7 +4,7 @@ import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
 
-class Player(val user: User, private var chipBuyInAmount: Int) {
+class Player(val user: User, var chipBuyInAmount: Int) {
 
     private lateinit var holeCards: Pair<PlayingCard, PlayingCard>
     var playerHandRank: Pair<HandRankings, Int> = Pair(HandRankings.HIGH_CARD, 7462)

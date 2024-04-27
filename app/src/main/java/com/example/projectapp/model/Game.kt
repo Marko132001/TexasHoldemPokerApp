@@ -9,21 +9,22 @@ class Game() {
 
     var players: MutableList<Player> = mutableListOf()
     private var potAmount: Int = 0
-    private var currentHighBet: Int = 0
+    var currentHighBet: Int = 0
     private val smallBlind: Int = 25
     private val bigBlind: Int = 50
     private var communityCards: MutableList<PlayingCard> = mutableListOf()
     private var dealerButtonPos: Int = -1
-    private var currentPlayerIndex: Int = -1
+    var currentPlayerIndex: Int = -1
     private var endRoundIndex: Int = -1
+    var raiseFlag: Boolean = false
 
     object CardConstants {
         const val COMMUNITY_CARDS = 5
         const val HOLE_CARDS = 2
         const val FLOP_CARDS_START = 0
         const val FLOP_CARDS_END = 3
-        const val TURN_CARD_INDEX = 3
-        const val RIVER_CARD_INDEX = 4
+        const val TURN_CARD_INDEX = 4
+        const val RIVER_CARD_INDEX = 5
         const val HAND_COMBINATION = 3
     }
 
@@ -86,7 +87,16 @@ class Game() {
 
     }
 
-    fun nextRoundInit(round: GameRound):GameRound {
+    fun streetRoundInit() {
+        currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)
+
+        if(players[currentPlayerIndex].playerState == PlayerState.FOLD){
+            iterateCurrentPlayerIndex()
+        }
+        endRoundIndex = currentPlayerIndex
+    }
+
+    fun nextRoundInit(round: GameRound): GameRound {
 
         if(players.size < 2){
             //TODO: Handle Exception -> print message and redirect to home screen
@@ -112,14 +122,13 @@ class Game() {
         return round
     }
 
-    fun streetRoundInit(){
-        currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)
+    //TODO: Check for possible implementation of this method
+    fun isCurrentRoundFinished(): Boolean {
+        return !((currentPlayerIndex != endRoundIndex && !raiseFlag) ||
+                (players[currentPlayerIndex].playerBet != currentHighBet))
 
-        while(players[currentPlayerIndex].playerState == PlayerState.FOLD){
-            iterateCurrentPlayerIndex()
-        }
-        endRoundIndex = currentPlayerIndex
     }
+
 
     private fun shuffleCardsDeck(): List<PlayingCard> {
         return PlayingCard.entries.shuffled()
@@ -140,23 +149,27 @@ class Game() {
         }
     }
 
-    fun showStreet(gameRound: GameRound): Any {
+    fun showStreet(gameRound: GameRound): MutableList<PlayingCard> {
         return when(gameRound){
+            GameRound.PREFLOP -> mutableListOf()
             GameRound.FLOP -> communityCards
                 .subList(CardConstants.FLOP_CARDS_START, CardConstants.FLOP_CARDS_END)
-
-            GameRound.TURN -> communityCards[CardConstants.TURN_CARD_INDEX]
-            GameRound.RIVER -> communityCards[CardConstants.RIVER_CARD_INDEX]
+            GameRound.TURN -> communityCards
+                .subList(CardConstants.FLOP_CARDS_START, CardConstants.TURN_CARD_INDEX)
+            GameRound.RIVER -> communityCards
+                .subList(CardConstants.FLOP_CARDS_START, CardConstants.RIVER_CARD_INDEX)
             else -> communityCards
         }
     }
 
-    private fun updatePot(playerBet: Int) {
+    fun updatePot(playerBet: Int) {
         potAmount += playerBet
     }
 
-    private fun iterateCurrentPlayerIndex(){
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+    fun iterateCurrentPlayerIndex(){
+        do{
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+        }while(players[currentPlayerIndex].playerState == PlayerState.FOLD)
     }
 
     private fun updateDealerButtonPos() {
@@ -227,14 +240,14 @@ class Game() {
         return winner
     }
 
-    fun assignChipsToWinner(winner: MutableList<Player>) {
-        if(winner.size == 1){
-            winner[0].assignChips(potAmount)
+    fun assignChipsToWinner(winners: MutableList<Player>) {
+        if(winners.size == 1){
+            winners[0].assignChips(potAmount)
         }
         else{
             val splitPot = potAmount / 2
-            winner[0].assignChips(splitPot)
-            winner[1].assignChips(splitPot)
+            winners[0].assignChips(splitPot)
+            winners[1].assignChips(splitPot)
         }
     }
 
@@ -263,10 +276,7 @@ class Game() {
                 "fold" -> players[currentPlayerIndex].fold()
             }
 
-            do{
-                iterateCurrentPlayerIndex()
-            }while(players[currentPlayerIndex].playerState == PlayerState.FOLD)
-
+            iterateCurrentPlayerIndex()
 
             println(toString())
             players.forEach {

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -36,10 +37,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.example.projectapp.data.GameRound
 import com.example.projectapp.data.PlayingCard
 import com.example.projectapp.model.Game
 import com.example.projectapp.model.Player
 import com.example.projectapp.model.User
+import kotlin.concurrent.fixedRateTimer
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.projectapp.ui.GameViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -55,52 +64,48 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-fun initGame() {
 
-    val user1 = User("User1")
-    val user2 = User("User2")
-    val user3 = User("User3")
-
-    val player1 = Player(user1, chipBuyInAmount = 500)
-    val player2 = Player(user2, chipBuyInAmount = 900)
-    val player3 = Player(user3, chipBuyInAmount = 1000)
-
-    val game = Game()
-
-    game.playerJoin(player1)
-    game.playerJoin(player2)
-    game.playerJoin(player3)
-
-}
 
 @Composable
-fun PokerApp(){
+fun PokerApp(
+    gameViewModel: GameViewModel = viewModel()
+){
 
     val context = LocalContext.current
     val activity = context as Activity
     activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
-    val cards: MutableList<PlayingCard> = mutableListOf(
-        PlayingCard.TEN_OF_SPADES,
-        PlayingCard.TWO_OF_DIAMONDS,
-        PlayingCard.FIVE_OF_SPADES,
-        PlayingCard.ACE_OF_HEARTS,
-        PlayingCard.QUEEN_OF_SPADES
-    )
+    val gameUiState by gameViewModel.uiState.collectAsStateWithLifecycle()
 
-    val cardIds: MutableList<Int> = mutableListOf()
 
-    cards.forEach { playingCard ->
-        val cardLabel = playingCard.suit.label + "_" + playingCard.rank.label
-        val cardId: Int = remember(cardLabel) {
+    val firstCardId: Int = remember(gameUiState.holeCards.first) {
+        context.resources.getIdentifier(
+            gameUiState.holeCards.first,
+            "drawable",
+            context.packageName
+        )
+    }
+
+    val secondCardId: Int = remember(gameUiState.holeCards.second) {
+        context.resources.getIdentifier(
+            gameUiState.holeCards.second,
+            "drawable",
+            context.packageName
+        )
+    }
+
+    val communityCardIds: MutableList<Int> = mutableListOf()
+
+    gameUiState.communityCards.forEach { communityCard ->
+        val cardId: Int = remember(communityCard) {
             context.resources.getIdentifier(
-                cardLabel,
+                communityCard,
                 "drawable",
                 context.packageName
             )
         }
 
-        cardIds.add(cardId)
+        communityCardIds.add(cardId)
     }
 
     TableBackground()
@@ -112,25 +117,30 @@ fun PokerApp(){
             actionButtons
         ) = createRefs()
 
-        LazyRow(modifier = Modifier
-            .constrainAs(communityCards){
-                centerHorizontallyTo(parent)
-                centerVerticallyTo(parent)
-            }
+        LazyRow(
+            modifier = Modifier
+                .constrainAs(communityCards){
+                    centerHorizontallyTo(parent)
+                    centerVerticallyTo(parent)
+                }
         ) {
-            items(cardIds) { cardId ->
-                Image(
-                    modifier = Modifier
-                        .size(80.dp),
-                    painter = painterResource(id = cardId),
-                    contentDescription = null
-                )
+            if(communityCardIds.isNotEmpty()) {
+                items(communityCardIds) { cardId ->
+                    Image(
+                        modifier = Modifier
+                            .size(80.dp),
+                        painter = painterResource(id = cardId),
+                        contentDescription = null
+                    )
+                }
             }
         }
 
-        CardHandPlayer(context,
+        CardHandPlayer(
+            Pair(firstCardId, secondCardId),
             modifier = Modifier.constrainAs(playerHand){
-                centerHorizontallyTo(parent)
+                //centerHorizontallyTo(parent)
+                end.linkTo(actionButtons.start, margin = 60.dp)
                 bottom.linkTo(parent.bottom, margin = 10.dp)
             }
         )
@@ -162,12 +172,12 @@ fun PokerApp(){
         Row(
             modifier = Modifier.constrainAs(actionButtons){
                 bottom.linkTo(parent.bottom)
-                end.linkTo(parent.end, margin = 10.dp)
+                end.linkTo(parent.end, margin = 3.dp)
             },
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ){
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { gameViewModel.handleFoldAction() },
                 shape = RectangleShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.DarkGray
@@ -176,7 +186,8 @@ fun PokerApp(){
                 Text(text = "FOLD")
             }
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { gameViewModel.handleCheckAction() },
+                enabled = gameUiState.isCheckEnabled,
                 shape = RectangleShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.DarkGray
@@ -185,7 +196,21 @@ fun PokerApp(){
                 Text(text = "CHECK")
             }
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { gameViewModel.handleCallAction() },
+                enabled = gameUiState.isCallEnabled,
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray
+                )
+            ) {
+                Text(text = "CALL")
+            }
+            Button(
+                onClick = {
+                    //TODO: Raise amount user input
+                    gameViewModel.handleRaiseAction()
+                },
+                enabled = gameUiState.isRaiseEnabled,
                 shape = RectangleShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.DarkGray
@@ -213,32 +238,10 @@ fun TableBackground(){
 
 
 @Composable
-fun CardHandPlayer(context: Context, modifier: Modifier){
+fun CardHandPlayer(playerCardIds: Pair<Int, Int>, modifier: Modifier){
 
-    val firstCardLabel: String =
-        PlayingCard.TEN_OF_SPADES.suit.label + "_" + PlayingCard.TEN_OF_SPADES.rank.label
-    val secondCardLabel: String =
-        PlayingCard.KING_OF_CLUBS.suit.label + "_" + PlayingCard.KING_OF_CLUBS.rank.label
-
-
-    val firstCardId: Int = remember(firstCardLabel) {
-        context.resources.getIdentifier(
-            firstCardLabel,
-            "drawable",
-            context.packageName
-        )
-    }
-
-    val secondCardId: Int = remember(secondCardLabel) {
-        context.resources.getIdentifier(
-            secondCardLabel,
-            "drawable",
-            context.packageName
-        )
-    }
-
-    val firstCard = painterResource(id = firstCardId)
-    val secondCard = painterResource(id = secondCardId)
+    val firstCard = painterResource(id = playerCardIds.first)
+    val secondCard = painterResource(id = playerCardIds.second)
 
     Box(
         modifier = modifier
