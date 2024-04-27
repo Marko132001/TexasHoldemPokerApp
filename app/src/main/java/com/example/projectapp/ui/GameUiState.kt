@@ -5,6 +5,6 @@ data class GameUiState(
     val holeCards: Pair<String, String> = Pair("", ""),
     val communityCards: List<String> = listOf(),
     val isCallEnabled: Boolean = true,
-    val isRaiseEnabled: Boolean = false,
+    val isRaiseEnabled: Boolean = true,
     val isCheckEnabled: Boolean = false,
 )

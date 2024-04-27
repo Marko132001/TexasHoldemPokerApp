@@ -34,12 +34,15 @@ class GameViewModel : ViewModel() {
     private fun initGame() {
         val user1 = User("User1")
         val user2 = User("User2")
+        val user3 = User("User3")
 
         val player1 = Player(user1, chipBuyInAmount = 500)
         val player2 = Player(user2, chipBuyInAmount = 900)
+        val player3 = Player(user3, chipBuyInAmount = 1000)
 
         game.playerJoin(player1)
         game.playerJoin(player2)
+        game.playerJoin(player3)
 
         resetGame()
     }
@@ -54,19 +57,12 @@ class GameViewModel : ViewModel() {
                 game.players[game.currentPlayerIndex].getHoleCards().first.cardLabel,
                 game.players[game.currentPlayerIndex].getHoleCards().second.cardLabel
             ),
-            communityCards = game.showStreet(round).map { it.cardLabel },
-            isRaiseEnabled =
-                if (game.currentHighBet >= game.players[game.currentPlayerIndex].chipBuyInAmount)
-                    false
-                else
-                    true
+            communityCards = game.showStreet(round).map { it.cardLabel }
         )
     }
 
     private fun updateBettingRound() {
         if(game.isCurrentRoundFinished()) {
-            round = round.nextRound()
-            game.streetRoundInit()
             round = game.nextRoundInit(round)
 
             _uiState.update { currentState ->
@@ -102,7 +98,12 @@ class GameViewModel : ViewModel() {
                 if (game.currentHighBet >= game.players[game.currentPlayerIndex].chipBuyInAmount)
                     false
                 else
-                    true
+                    true,
+                isCallEnabled =
+                    if(game.currentHighBet > game.players[game.currentPlayerIndex].playerBet)
+                        true
+                    else
+                        false
             )
         }
     }

@@ -55,7 +55,7 @@ fun main() {
 
                 else -> {
                     println(game.showStreet(round))
-                    game.streetRoundInit()
+                    //game.streetRoundInit()
                     game.gameRoundSim()
                 }
             }

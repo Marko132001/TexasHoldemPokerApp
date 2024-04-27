@@ -57,6 +57,8 @@ class Game() {
     }
 
     fun preflopRoundInit() {
+        raiseFlag = false
+
         players.forEach {
             player ->
                 player.playerState = PlayerState.NONE
@@ -71,7 +73,7 @@ class Game() {
         generateCommunityCards(cards)
 
         currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.UNDER_THE_GUN)
-        endRoundIndex = getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND)
+        endRoundIndex = getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND + 1)
         potAmount = 0
         currentHighBet = 0
 
@@ -87,15 +89,6 @@ class Game() {
 
     }
 
-    fun streetRoundInit() {
-        currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)
-
-        if(players[currentPlayerIndex].playerState == PlayerState.FOLD){
-            iterateCurrentPlayerIndex()
-        }
-        endRoundIndex = currentPlayerIndex
-    }
-
     fun nextRoundInit(round: GameRound): GameRound {
 
         if(players.size < 2){
@@ -104,7 +97,6 @@ class Game() {
         }
 
         var countFolds = 0
-
         players.forEach {
                 player ->
             if(player.playerState != PlayerState.FOLD){
@@ -119,16 +111,24 @@ class Game() {
             return GameRound.SHOWDOWN
         }
 
-        return round
+        raiseFlag = false
+
+        currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)
+
+        if(players[currentPlayerIndex].playerState == PlayerState.FOLD){
+            iterateCurrentPlayerIndex()
+        }
+        endRoundIndex = currentPlayerIndex
+
+        return round.nextRound()
     }
 
-    //TODO: Check for possible implementation of this method
     fun isCurrentRoundFinished(): Boolean {
         return !((currentPlayerIndex != endRoundIndex && !raiseFlag) ||
                 (players[currentPlayerIndex].playerBet != currentHighBet))
+                || (players.count { it.playerState == PlayerState.FOLD } == players.size - 1)
 
     }
-
 
     private fun shuffleCardsDeck(): List<PlayingCard> {
         return PlayingCard.entries.shuffled()

@@ -147,25 +147,25 @@ fun PokerApp(
         CardHandOpponent(
             modifier = Modifier.constrainAs(opponentHand1){
                 centerVerticallyTo(communityCards)
-                end.linkTo(parent.end, margin = 40.dp)
+                start.linkTo(parent.start, margin = 20.dp)
             }
         )
         CardHandOpponent(
             modifier = Modifier.constrainAs(opponentHand2){
-                centerVerticallyTo(communityCards)
-                start.linkTo(parent.start, margin = 20.dp)
+                top.linkTo(parent.top, margin = 20.dp)
+                start.linkTo(opponentHand1.end, margin = 140.dp)
             }
         )
         CardHandOpponent(
             modifier = Modifier.constrainAs(opponentHand3){
                 top.linkTo(parent.top, margin = 20.dp)
-                end.linkTo(communityCards.start)
+                end.linkTo(opponentHand4.start, margin = 140.dp)
             }
         )
         CardHandOpponent(
             modifier = Modifier.constrainAs(opponentHand4){
-                top.linkTo(parent.top, margin = 20.dp)
-                start.linkTo(communityCards.end)
+                centerVerticallyTo(communityCards)
+                end.linkTo(parent.end, margin = 40.dp)
             }
         )
 
