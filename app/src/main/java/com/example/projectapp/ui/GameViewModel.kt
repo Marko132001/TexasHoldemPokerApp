@@ -23,9 +23,7 @@ class GameViewModel : ViewModel() {
     private val game: Game = Game()
     private lateinit var round: GameRound
 
-    //TODO: Handle user raise amount input
     var raiseAmount by mutableIntStateOf(50)
-        private set
 
     init {
         initGame()
@@ -53,6 +51,10 @@ class GameViewModel : ViewModel() {
         game.preflopRoundInit()
 
         _uiState.value = GameUiState(
+            potAmount = game.potAmount,
+            bigBlind = game.bigBlind,
+            currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
+            playerBets = game.players.map { it.playerBet },
             holeCards = Pair(
                 game.players[game.currentPlayerIndex].getHoleCards().first.cardLabel,
                 game.players[game.currentPlayerIndex].getHoleCards().second.cardLabel
@@ -67,6 +69,7 @@ class GameViewModel : ViewModel() {
 
             _uiState.update { currentState ->
                 currentState.copy(
+                    playerBets = game.players.map { it.playerBet },
                     communityCards = game.showStreet(round).map { it.cardLabel },
                 )
             }
@@ -89,6 +92,9 @@ class GameViewModel : ViewModel() {
     private fun updateAvailableActions() {
         _uiState.update { currentState ->
             currentState.copy(
+                potAmount = game.potAmount,
+                currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
+                playerBets = game.players.map { it.playerBet },
                 isCheckEnabled =
                 if (game.currentHighBet > game.players[game.currentPlayerIndex].playerBet)
                     false

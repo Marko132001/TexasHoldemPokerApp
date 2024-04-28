@@ -8,10 +8,10 @@ import com.example.projectapp.data.PlayingCard
 class Game() {
 
     var players: MutableList<Player> = mutableListOf()
-    private var potAmount: Int = 0
+    var potAmount: Int = 0
     var currentHighBet: Int = 0
-    private val smallBlind: Int = 25
-    private val bigBlind: Int = 50
+    val smallBlind: Int = 25
+    val bigBlind: Int = 50
     private var communityCards: MutableList<PlayingCard> = mutableListOf()
     private var dealerButtonPos: Int = -1
     var currentPlayerIndex: Int = -1
@@ -77,10 +77,17 @@ class Game() {
         potAmount = 0
         currentHighBet = 0
 
+        players[
+            getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)
+        ].playerState = PlayerState.SMALL_BLIND
         updatePot(
             players[getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)]
                 .paySmallBlind(smallBlind)
         )
+
+        players[
+            getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND)
+        ].playerState = PlayerState.BIG_BLIND
         updatePot(
             players[getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND)]
                 .payBigBlind(bigBlind)
@@ -99,6 +106,7 @@ class Game() {
         var countFolds = 0
         players.forEach {
                 player ->
+            player.playerBet = 0
             if(player.playerState != PlayerState.FOLD){
                 player.playerState = PlayerState.NONE
             }
@@ -119,6 +127,8 @@ class Game() {
             iterateCurrentPlayerIndex()
         }
         endRoundIndex = currentPlayerIndex
+
+        currentHighBet = 0
 
         return round.nextRound()
     }
