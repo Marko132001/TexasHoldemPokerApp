@@ -16,11 +16,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +51,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -55,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.ui.GameUiState
 import com.example.projectapp.ui.GameViewModel
+import com.example.projectapp.ui.SliderWithLabel
 import kotlin.math.roundToInt
 
 
@@ -136,7 +142,7 @@ fun PokerApp(
                 start.linkTo(opponentHand1.end, margin = 25.dp)
                 top.linkTo(opponentHand1.bottom)
             },
-            gameUiState.playerBets[1]
+            chipsAmount = gameUiState.playerBets[1]
         )
         CardHandOpponent(
             modifier = Modifier.constrainAs(opponentHand2){
@@ -147,7 +153,7 @@ fun PokerApp(
                 start.linkTo(opponentHand2.start)
                 top.linkTo(opponentHand2.bottom, margin = 20.dp)
             },
-            gameUiState.playerBets[2]
+            chipsAmount = gameUiState.playerBets[2]
         )
         CardHandOpponent(
             modifier = Modifier.constrainAs(opponentHand3){
@@ -173,12 +179,20 @@ fun PokerApp(
         )
 
         ActionButtons(
-            Modifier.constrainAs(actionButtons) {
+            actionButtons = Modifier.constrainAs(actionButtons) {
                 bottom.linkTo(parent.bottom)
                 end.linkTo(parent.end, margin = 3.dp)
             },
             gameViewModel,
             gameUiState
+        )
+    }
+
+    if(gameViewModel.isRaiseSlider) {
+        RaiseAmountSlider(
+            minimumRaise = gameUiState.bigBlind.toFloat(),
+            maximumRaise = gameUiState.currentPlayerChips.toFloat(),
+            gameViewModel = gameViewModel
         )
     }
 
@@ -191,8 +205,6 @@ fun ActionButtons(
     gameUiState: GameUiState
 ) {
 
-    var activeRaiseSlider by remember { mutableStateOf(false) }
-
     Row(
         modifier = actionButtons,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -200,7 +212,6 @@ fun ActionButtons(
         Button(
             onClick = {
                 gameViewModel.handleFoldAction()
-                activeRaiseSlider = false
             },
             shape = RectangleShape,
             colors = ButtonDefaults.buttonColors(
@@ -212,7 +223,6 @@ fun ActionButtons(
         Button(
             onClick = {
                 gameViewModel.handleCheckAction()
-                activeRaiseSlider = false
             },
             enabled = gameUiState.isCheckEnabled,
             shape = RectangleShape,
@@ -225,7 +235,6 @@ fun ActionButtons(
         Button(
             onClick = {
                 gameViewModel.handleCallAction()
-                activeRaiseSlider = false
             },
             enabled = gameUiState.isCallEnabled,
             shape = RectangleShape,
@@ -235,10 +244,10 @@ fun ActionButtons(
         ) {
             Text(text = "CALL")
         }
-        if(!activeRaiseSlider) {
+        if(!gameViewModel.isRaiseSlider) {
             Button(
                 onClick = {
-                    activeRaiseSlider = true
+                    gameViewModel.isRaiseSlider = true
                 },
                 enabled = gameUiState.isRaiseEnabled,
                 shape = RectangleShape,
@@ -250,25 +259,17 @@ fun ActionButtons(
             }
         }
         else{
-            Column {
-                RaiseAmountSlider(
-                    minimumRaise = gameUiState.bigBlind.toFloat(),
-                    maximumRaise = gameUiState.currentPlayerChips.toFloat(),
-                    gameViewModel = gameViewModel
+            Button(
+                onClick = {
+                    gameViewModel.handleRaiseAction()
+                },
+                enabled = gameUiState.isRaiseEnabled,
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray
                 )
-                Button(
-                    onClick = {
-                        activeRaiseSlider = false
-                        gameViewModel.handleRaiseAction()
-                    },
-                    enabled = gameUiState.isRaiseEnabled,
-                    shape = RectangleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.DarkGray
-                    )
-                ) {
-                    Text(text = "CONFIRM")
-                }
+            ) {
+                Text(text = "CONFIRM")
             }
         }
     }
@@ -280,29 +281,16 @@ fun RaiseAmountSlider(
     maximumRaise: Float,
     gameViewModel: GameViewModel
 ) {
-    //TODO: Finish slider UI
-    var sliderPosition by remember { mutableFloatStateOf(minimumRaise) }
-    gameViewModel.raiseAmount = sliderPosition.toInt()
-
-    Box (
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-    ){
-        Column {
-            Slider(
-                modifier = Modifier.rotate(270.0f).size(300.dp),
-                value = sliderPosition,
-                onValueChange = { sliderPosition = it.roundToInt().toFloat() },
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.secondary,
-                    activeTrackColor = MaterialTheme.colorScheme.secondary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                ),
-                steps = 3,
-                valueRange = minimumRaise..maximumRaise
-            )
-            Text(text = sliderPosition.toString())
-        }
+            .wrapContentSize(Alignment.CenterEnd)
+            .padding(bottom = 37.dp),
+    ) {
+        SliderWithLabel(
+            finiteEnd = true,
+            valueRange = minimumRaise..maximumRaise,
+            gameViewModel = gameViewModel
+        )
     }
 }
 

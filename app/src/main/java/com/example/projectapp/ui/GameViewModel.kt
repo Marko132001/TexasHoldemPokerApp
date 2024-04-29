@@ -24,6 +24,7 @@ class GameViewModel : ViewModel() {
     private lateinit var round: GameRound
 
     var raiseAmount by mutableIntStateOf(50)
+    var isRaiseSlider by mutableStateOf(false)
 
     init {
         initGame()
@@ -36,7 +37,7 @@ class GameViewModel : ViewModel() {
 
         val player1 = Player(user1, chipBuyInAmount = 500)
         val player2 = Player(user2, chipBuyInAmount = 900)
-        val player3 = Player(user3, chipBuyInAmount = 1000)
+        val player3 = Player(user3, chipBuyInAmount = 700)
 
         game.playerJoin(player1)
         game.playerJoin(player2)
@@ -70,7 +71,9 @@ class GameViewModel : ViewModel() {
             _uiState.update { currentState ->
                 currentState.copy(
                     playerBets = game.players.map { it.playerBet },
+                    currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
                     communityCards = game.showStreet(round).map { it.cardLabel },
+                    isRaiseEnabled = true
                 )
             }
 
@@ -87,9 +90,11 @@ class GameViewModel : ViewModel() {
 
         Log.d("Player1", game.players[0].toString())
         Log.d("Player2", game.players[1].toString())
+        Log.d("Player3", game.players[2].toString())
     }
 
     private fun updateAvailableActions() {
+        isRaiseSlider = false
         _uiState.update { currentState ->
             currentState.copy(
                 potAmount = game.potAmount,
