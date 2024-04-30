@@ -34,14 +34,20 @@ class GameViewModel : ViewModel() {
         val user1 = User("User1")
         val user2 = User("User2")
         val user3 = User("User3")
+        val user4 = User("User4")
+        val user5 = User("User5")
 
         val player1 = Player(user1, chipBuyInAmount = 500)
         val player2 = Player(user2, chipBuyInAmount = 900)
         val player3 = Player(user3, chipBuyInAmount = 700)
+        val player4 = Player(user4, chipBuyInAmount = 1000)
+        val player5 = Player(user5, chipBuyInAmount = 1200)
 
         game.playerJoin(player1)
         game.playerJoin(player2)
         game.playerJoin(player3)
+        game.playerJoin(player4)
+        game.playerJoin(player5)
 
         resetGame()
     }
@@ -54,8 +60,12 @@ class GameViewModel : ViewModel() {
         _uiState.value = GameUiState(
             potAmount = game.potAmount,
             bigBlind = game.bigBlind,
+            dealerButtonPos = game.dealerButtonPos,
             currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
+            playerUserNames = game.players.map { it.user.username },
+            playersBuyInChips = game.players.map { it.chipBuyInAmount },
             playerBets = game.players.map { it.playerBet },
+            playerStates = game.players.map { it.playerState },
             holeCards = Pair(
                 game.players[game.currentPlayerIndex].getHoleCards().first.cardLabel,
                 game.players[game.currentPlayerIndex].getHoleCards().second.cardLabel
@@ -73,6 +83,8 @@ class GameViewModel : ViewModel() {
                     playerBets = game.players.map { it.playerBet },
                     currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
                     communityCards = game.showStreet(round).map { it.cardLabel },
+                    playersBuyInChips = game.players.map { it.chipBuyInAmount },
+                    playerStates = game.players.map { it.playerState },
                     isRaiseEnabled = true
                 )
             }
@@ -81,6 +93,7 @@ class GameViewModel : ViewModel() {
 
             if(round == GameRound.SHOWDOWN) {
                 game.assignChipsToWinner(game.rankCardHands())
+
 
                 //TODO: Display winner in UI
 
@@ -114,7 +127,9 @@ class GameViewModel : ViewModel() {
                     if(game.currentHighBet > game.players[game.currentPlayerIndex].playerBet)
                         true
                     else
-                        false
+                        false,
+                playersBuyInChips = game.players.map { it.chipBuyInAmount },
+                playerStates = game.players.map { it.playerState }
             )
         }
     }

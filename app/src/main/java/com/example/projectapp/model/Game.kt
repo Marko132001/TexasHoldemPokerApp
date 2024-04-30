@@ -13,7 +13,7 @@ class Game() {
     val smallBlind: Int = 25
     val bigBlind: Int = 50
     private var communityCards: MutableList<PlayingCard> = mutableListOf()
-    private var dealerButtonPos: Int = -1
+    var dealerButtonPos: Int = -1
     var currentPlayerIndex: Int = -1
     private var endRoundIndex: Int = -1
     var raiseFlag: Boolean = false
@@ -77,17 +77,12 @@ class Game() {
         potAmount = 0
         currentHighBet = 0
 
-        players[
-            getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)
-        ].playerState = PlayerState.SMALL_BLIND
+
         updatePot(
             players[getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)]
                 .paySmallBlind(smallBlind)
         )
 
-        players[
-            getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND)
-        ].playerState = PlayerState.BIG_BLIND
         updatePot(
             players[getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND)]
                 .payBigBlind(bigBlind)

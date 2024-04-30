@@ -1,14 +1,14 @@
 package com.example.projectapp.data
 
-enum class HandRankings {
-    ROYAL_FLUSH,
-    STRAIGHT_FLUSH,
-    FOUR_OF_A_KIND,
-    FULL_HOUSE,
-    FLUSH,
-    STRAIGHT,
-    THREE_OF_A_KIND,
-    TWO_PAIR,
-    ONE_PAIR,
-    HIGH_CARD
+enum class HandRankings(val label: String) {
+    ROYAL_FLUSH("ROYAL FLUSH"),
+    STRAIGHT_FLUSH("STRAIGHT FLUSH"),
+    FOUR_OF_A_KIND("FOUR OF A KIND"),
+    FULL_HOUSE("FULL HOUSE"),
+    FLUSH("FLUSH"),
+    STRAIGHT("STRAIGHT"),
+    THREE_OF_A_KIND("THREE OF A KIND"),
+    TWO_PAIR("TWO PAIR"),
+    ONE_PAIR("ONE PAIR"),
+    HIGH_CARD("HIGH CARD")
 }
