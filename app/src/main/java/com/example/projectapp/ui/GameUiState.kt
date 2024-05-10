@@ -1,18 +1,15 @@
 package com.example.projectapp.ui
 
-import com.example.projectapp.data.PlayerState
+import com.example.projectapp.model.Player
 
 
 data class GameUiState(
     val potAmount: Int = 0,
     val bigBlind: Int = 0,
+    val currentHighBet: Int = 0,
     val dealerButtonPos: Int = 0,
-    val currentPlayerChips: Int = 0,
-    val playerUserNames: List<String> = listOf(),
-    val playersBuyInChips: List<Int> = listOf(),
-    val playerBets: List<Int> = listOf(),
-    val playerStates: List<PlayerState> = listOf(),
-    val holeCards: Pair<String, String> = Pair("", ""),
+    val players: List<Player> = listOf(),
+    val currentPlayerIndex: Int = 0,
     val communityCards: List<String> = listOf(),
     val isCallEnabled: Boolean = true,
     val isRaiseEnabled: Boolean = true,

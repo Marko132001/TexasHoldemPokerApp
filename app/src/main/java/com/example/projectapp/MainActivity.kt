@@ -17,10 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,14 +29,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SliderPositions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.rotate
@@ -51,23 +42,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.projectapp.data.PlayerState
+import com.example.projectapp.model.Player
 import com.example.projectapp.ui.GameUiState
 import com.example.projectapp.ui.GameViewModel
 import com.example.projectapp.ui.SliderWithLabel
-import kotlin.math.roundToInt
 
 
 class MainActivity : ComponentActivity() {
@@ -148,18 +132,14 @@ fun PokerApp(
                 end.linkTo(actionButtons.start)
                 bottom.linkTo(parent.bottom)
             },
-            holeCards = gameUiState.holeCards,
-            chipsAmount = gameUiState.playerBets[0],
-            username = gameUiState.playerUserNames[0],
-            playerChips = gameUiState.playersBuyInChips[0],
-            playerState = gameUiState.playerStates[0],
+            player = gameUiState.players[0],
             dealerButtonPos =
             if (gameUiState.dealerButtonPos == 0)
                 gameUiState.dealerButtonPos
             else
                 -1
         )
-        if(gameUiState.playerUserNames.getOrNull(1) != null) {
+        if(gameUiState.players.getOrNull(1) != null) {
             CardHandOpponent(
                 modifier = Modifier.constrainAs(opponentHand1) {
                     start.linkTo(parent.start, margin = 90.dp)
@@ -173,10 +153,7 @@ fun PokerApp(
                     end.linkTo(opponentHand1.end, margin = (-60).dp)
                     top.linkTo(opponentHand1.bottom)
                 },
-                chipsAmount = gameUiState.playerBets[1],
-                username = gameUiState.playerUserNames[1],
-                playerChips = gameUiState.playersBuyInChips[1],
-                playerState = gameUiState.playerStates[1],
+                player = gameUiState.players[1],
                 dealerButtonPos =
                 if (gameUiState.dealerButtonPos == 1)
                     gameUiState.dealerButtonPos
@@ -184,7 +161,7 @@ fun PokerApp(
                     -1
             )
         }
-        if(gameUiState.playerUserNames.getOrNull(2) != null) {
+        if(gameUiState.players.getOrNull(2) != null) {
             CardHandOpponent(
                 modifier = Modifier.constrainAs(opponentHand2) {
                     top.linkTo(parent.top, margin = 70.dp)
@@ -198,10 +175,7 @@ fun PokerApp(
                     end.linkTo(opponentHand2.end, margin = (-30).dp)
                     bottom.linkTo(opponentHand2.top, margin = (-30).dp)
                 },
-                chipsAmount = gameUiState.playerBets[2],
-                username = gameUiState.playerUserNames[2],
-                playerChips = gameUiState.playersBuyInChips[2],
-                playerState = gameUiState.playerStates[2],
+                player = gameUiState.players[2],
                 dealerButtonPos =
                 if (gameUiState.dealerButtonPos == 2)
                     gameUiState.dealerButtonPos
@@ -209,7 +183,7 @@ fun PokerApp(
                     -1
             )
         }
-        if(gameUiState.playerUserNames.getOrNull(3) != null) {
+        if(gameUiState.players.getOrNull(3) != null) {
             CardHandOpponent(
                 modifier = Modifier.constrainAs(opponentHand3) {
                     top.linkTo(parent.top, margin = 70.dp)
@@ -223,10 +197,7 @@ fun PokerApp(
                     start.linkTo(opponentHand3.end)
                     bottom.linkTo(opponentHand3.top, margin = (-30).dp)
                 },
-                chipsAmount = gameUiState.playerBets[3],
-                username = gameUiState.playerUserNames[3],
-                playerChips = gameUiState.playersBuyInChips[3],
-                playerState = gameUiState.playerStates[3],
+                player = gameUiState.players[3],
                 dealerButtonPos =
                 if (gameUiState.dealerButtonPos == 3)
                     gameUiState.dealerButtonPos
@@ -234,7 +205,7 @@ fun PokerApp(
                     -1
             )
         }
-        if(gameUiState.playerUserNames.getOrNull(4) != null) {
+        if(gameUiState.players.getOrNull(4) != null) {
             CardHandOpponent(
                 modifier = Modifier.constrainAs(opponentHand4) {
                     end.linkTo(parent.end, margin = 130.dp)
@@ -248,10 +219,7 @@ fun PokerApp(
                     start.linkTo(opponentHand4.start, margin = (-30).dp)
                     top.linkTo(opponentHand4.bottom)
                 },
-                chipsAmount = gameUiState.playerBets[4],
-                username = gameUiState.playerUserNames[4],
-                playerChips = gameUiState.playersBuyInChips[4],
-                playerState = gameUiState.playerStates[4],
+                player = gameUiState.players[4],
                 dealerButtonPos =
                 if (gameUiState.dealerButtonPos == 4)
                     gameUiState.dealerButtonPos
@@ -273,7 +241,10 @@ fun PokerApp(
     if(gameViewModel.isRaiseSlider) {
         RaiseAmountSlider(
             minimumRaise = gameUiState.bigBlind.toFloat(),
-            maximumRaise = gameUiState.currentPlayerChips.toFloat(),
+            maximumRaise = (
+                gameUiState.players[gameUiState.currentPlayerIndex].chipBuyInAmount -
+                        (gameUiState.currentHighBet - gameUiState.players[gameUiState.currentPlayerIndex].playerBet)
+                    ).toFloat(),
             gameViewModel = gameViewModel
         )
     }
@@ -492,8 +463,8 @@ fun PlayerInformation(
             modifier = Modifier
                 .padding(horizontal = 10.dp),
             text =
-            if (playerState.name != PlayerState.NONE.name
-                && playerState.name != PlayerState.IDLE.name)
+            if (playerState.name != PlayerState.INACTIVE.name
+                && playerState.name != PlayerState.SPECTATOR.name)
                 playerState.name
             else
                 "",
@@ -521,13 +492,11 @@ fun CardHandPlayer(
     modifier: Modifier,
     chipValueModifier: Modifier,
     infoModifier: Modifier,
-    holeCards: Pair<String, String>,
-    chipsAmount: Int,
-    username: String,
-    playerChips: Int,
-    playerState: PlayerState,
+    player: Player,
     dealerButtonPos: Int
 ){
+
+    val holeCards = player.getHoleCardsLabels()
 
     val firstCardId: Int = remember(holeCards.first) {
         context.resources.getIdentifier(
@@ -569,17 +538,17 @@ fun CardHandPlayer(
         modifier = infoModifier
     ){
         PlayerInformation(
-            username,
-            playerChips,
-            playerState,
+            player.user.username,
+            player.chipBuyInAmount,
+            player.playerState,
             dealerButtonPos
         )
     }
 
-    if(chipsAmount > 0){
+    if(player.playerBet > 0){
         ChipValue(
             modifier = chipValueModifier,
-            chipsAmount
+            chipsAmount = player.playerBet
         )
     }
 }
@@ -589,10 +558,7 @@ fun CardHandOpponent(
     modifier: Modifier,
     chipValueModifier: Modifier,
     infoModifier: Modifier,
-    chipsAmount: Int,
-    username: String,
-    playerChips: Int,
-    playerState: PlayerState,
+    player: Player,
     dealerButtonPos: Int
 ){
     val opponentCard = painterResource(R.drawable.blue2)
@@ -620,17 +586,17 @@ fun CardHandOpponent(
         modifier = infoModifier
     ){
         PlayerInformation(
-            username,
-            playerChips,
-            playerState,
+            player.user.username,
+            player.chipBuyInAmount,
+            player.playerState,
             dealerButtonPos
         )
     }
 
-    if(chipsAmount > 0){
+    if(player.playerBet > 0){
         ChipValue(
             modifier = chipValueModifier,
-            chipsAmount = chipsAmount
+            chipsAmount = player.playerBet
         )
     }
 }

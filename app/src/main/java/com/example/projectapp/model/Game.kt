@@ -29,12 +29,6 @@ class Game() {
         const val HAND_COMBINATION = 3
     }
 
-    object PlayerRoleOffsets {
-        const val SMALL_BLIND = 1
-        const val BIG_BLIND = 2
-        const val UNDER_THE_GUN = 3
-    }
-
     fun playerJoin(newPlayer: Player) {
         if(players.size < 5){
             players.add(newPlayer)
@@ -65,26 +59,26 @@ class Game() {
         players.forEach {
             player ->
                 if(player.chipBuyInAmount == 0){
-                    player.playerState = PlayerState.IDLE;
+                    player.playerState = PlayerState.SPECTATOR
                 }
                 else {
-                    player.playerState = PlayerState.NONE
+                    player.playerState = PlayerState.INACTIVE
                 }
                 player.playerHandRank = Pair(HandRankings.HIGH_CARD, 7462)
                 player.playerBet = 0
         }
 
-        updateDealerButtonPos()
+        updateDealerButtonPosition()
 
         val cards: List<PlayingCard> = shuffleCardsDeck()
         generateHoleCards(cards)
         generateCommunityCards(cards)
 
-        var smallBlindIndex = getPlayerRolePos(dealerButtonPos)
-        var bigBlindIndex = getPlayerRolePos(smallBlindIndex)
-
-        currentPlayerIndex = getPlayerRolePos(bigBlindIndex)
+        val smallBlindIndex = getPlayerRolePosition(dealerButtonPos)
+        val bigBlindIndex = getPlayerRolePosition(smallBlindIndex)
+        currentPlayerIndex = getPlayerRolePosition(bigBlindIndex)
         endRoundIndex = currentPlayerIndex
+
         potAmount = 0
         currentHighBet = 0
 
@@ -134,9 +128,9 @@ class Game() {
                     player.playerBet = 0
                     if(player.playerState != PlayerState.FOLD
                         && player.playerState != PlayerState.ALL_IN
-                        && player.playerState != PlayerState.IDLE
+                        && player.playerState != PlayerState.SPECTATOR
                     ){
-                        player.playerState = PlayerState.NONE
+                        player.playerState = PlayerState.INACTIVE
                         countPlayersWithActions++
                     }
         }
@@ -148,7 +142,7 @@ class Game() {
 
         Log.d("GAME", "Updating current player index...")
 
-        currentPlayerIndex = getPlayerRolePos(dealerButtonPos)
+        currentPlayerIndex = getPlayerRolePosition(dealerButtonPos)
 
         Log.d("GAME", "Current player index: $currentPlayerIndex")
 
@@ -165,7 +159,7 @@ class Game() {
         Log.d("GAME", "Checking for showdown round edge cases...")
         val countFolds = players.count {
             it.playerState == PlayerState.FOLD
-                    || it.playerState == PlayerState.IDLE
+                    || it.playerState == PlayerState.SPECTATOR
         }
 
         if(countFolds == players.size - 1){
@@ -175,7 +169,7 @@ class Game() {
         return players.count {
             it.playerState == PlayerState.FOLD
                     || it.playerState == PlayerState.ALL_IN
-                    || it.playerState == PlayerState.IDLE
+                    || it.playerState == PlayerState.SPECTATOR
         } == players.size
 
     }
@@ -229,31 +223,31 @@ class Game() {
         }while(
             players[currentPlayerIndex].playerState == PlayerState.FOLD
             || players[currentPlayerIndex].playerState == PlayerState.ALL_IN
-            || players[currentPlayerIndex].playerState == PlayerState.IDLE
+            || players[currentPlayerIndex].playerState == PlayerState.SPECTATOR
         )
         Log.d("GAME",
             "Next player index: $currentPlayerIndex")
     }
 
-    private fun updateDealerButtonPos() {
+    private fun updateDealerButtonPosition() {
         Log.d("GAME",
             "Updating dealer button position. Current dealer button index: $dealerButtonPos")
         do {
             dealerButtonPos = (dealerButtonPos + 1) % players.size
         }while(
-            players[dealerButtonPos].playerState == PlayerState.IDLE
+            players[dealerButtonPos].playerState == PlayerState.SPECTATOR
         )
         Log.d("GAME", "Next dealer button index: $dealerButtonPos")
     }
 
-    private fun getPlayerRolePos(playerRoleOffset: Int): Int {
+    private fun getPlayerRolePosition(playerRoleOffset: Int): Int {
         var playerIndex = playerRoleOffset
         do {
             playerIndex = (playerIndex + 1) % players.size
         }while(
             players[playerIndex].playerState == PlayerState.FOLD
                 || players[playerIndex].playerState == PlayerState.ALL_IN
-                || players[playerIndex].playerState == PlayerState.IDLE
+                || players[playerIndex].playerState == PlayerState.SPECTATOR
         )
         return playerIndex
     }
@@ -298,7 +292,7 @@ class Game() {
         players.forEach {
             player ->
                 if(player.playerState != PlayerState.FOLD
-                    && player.playerState != PlayerState.IDLE) {
+                    && player.playerState != PlayerState.SPECTATOR) {
                     combinationUtil(
                         communityCards, tmpCardComb, 0,
                         CardConstants.COMMUNITY_CARDS - 1, 0,

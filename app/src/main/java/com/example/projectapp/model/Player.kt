@@ -9,7 +9,7 @@ class Player(val user: User, var chipBuyInAmount: Int) {
 
     private lateinit var holeCards: Pair<PlayingCard, PlayingCard>
     var playerHandRank: Pair<HandRankings, Int> = Pair(HandRankings.HIGH_CARD, 7462)
-    var playerState: PlayerState = PlayerState.NONE
+    var playerState: PlayerState = PlayerState.INACTIVE
     var playerBet: Int = 0
 
     fun assignHoleCards(holeCardsAssigned: Pair<PlayingCard, PlayingCard>){
@@ -19,6 +19,10 @@ class Player(val user: User, var chipBuyInAmount: Int) {
     fun getHoleCards(): Pair<PlayingCard, PlayingCard> {
 
         return holeCards
+    }
+
+    fun getHoleCardsLabels(): Pair<String, String> {
+        return Pair(holeCards.first.cardLabel, holeCards.second.cardLabel)
     }
 
     fun assignChips(chipAmount: Int){
@@ -48,24 +52,21 @@ class Player(val user: User, var chipBuyInAmount: Int) {
     }
 
     fun raise(currentHighBet: Int, raiseAmount: Int): Int {
-        //TODO: Check the ALL_IN condition
-        if(raiseAmount == chipBuyInAmount) {
-            playerState = PlayerState.ALL_IN
-            val allInCall = chipBuyInAmount
-            chipBuyInAmount = 0
-            playerBet += allInCall
-
-            Log.d("PLAYER", "${user.username} went ALL IN for ${allInCall} chips")
-
-            return allInCall
-        }
-        playerState = PlayerState.RAISE
         val betDifference = (currentHighBet - playerBet)
-        playerBet += betDifference + raiseAmount
-        chipBuyInAmount -= betDifference + raiseAmount
+        if(raiseAmount == chipBuyInAmount - betDifference) {
+            playerState = PlayerState.ALL_IN
 
-        Log.d("PLAYER",
-            "${user.username} made a BET for ${betDifference + raiseAmount} chips")
+            Log.d("PLAYER", "${user.username} went ALL IN for ${betDifference + raiseAmount} chips")
+        }
+        else {
+            playerState = PlayerState.RAISE
+
+            Log.d("PLAYER",
+                "${user.username} made a BET for ${betDifference + raiseAmount} chips")
+        }
+
+        playerBet += (betDifference + raiseAmount)
+        chipBuyInAmount -= (betDifference + raiseAmount)
 
         return betDifference + raiseAmount
     }

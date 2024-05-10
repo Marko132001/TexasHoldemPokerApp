@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.projectapp.data.GameRound
@@ -60,16 +59,10 @@ class GameViewModel : ViewModel() {
         _uiState.value = GameUiState(
             potAmount = game.potAmount,
             bigBlind = game.bigBlind,
+            currentHighBet = game.currentHighBet,
             dealerButtonPos = game.dealerButtonPos,
-            currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
-            playerUserNames = game.players.map { it.user.username },
-            playersBuyInChips = game.players.map { it.chipBuyInAmount },
-            playerBets = game.players.map { it.playerBet },
-            playerStates = game.players.map { it.playerState },
-            holeCards = Pair(
-                game.players[game.currentPlayerIndex].getHoleCards().first.cardLabel,
-                game.players[game.currentPlayerIndex].getHoleCards().second.cardLabel
-            ),
+            players = game.players,
+            currentPlayerIndex = game.currentPlayerIndex,
             communityCards = game.showStreet(round).map { it.cardLabel }
         )
     }
@@ -83,11 +76,10 @@ class GameViewModel : ViewModel() {
 
             _uiState.update { currentState ->
                 currentState.copy(
-                    playerBets = game.players.map { it.playerBet },
-                    currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
+                    players = game.players,
+                    currentHighBet = game.currentHighBet,
+                    currentPlayerIndex = game.currentPlayerIndex,
                     communityCards = game.showStreet(round).map { it.cardLabel },
-                    playersBuyInChips = game.players.map { it.chipBuyInAmount },
-                    playerStates = game.players.map { it.playerState },
                     isRaiseEnabled = true
                 )
             }
@@ -111,25 +103,15 @@ class GameViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 potAmount = game.potAmount,
-                currentPlayerChips = game.players[game.currentPlayerIndex].chipBuyInAmount,
-                playerBets = game.players.map { it.playerBet },
+                players = game.players,
+                currentHighBet = game.currentHighBet,
+                currentPlayerIndex = game.currentPlayerIndex,
                 isCheckEnabled =
-                if (game.currentHighBet > game.players[game.currentPlayerIndex].playerBet)
-                    false
-                else
-                    true,
+                    game.currentHighBet <= game.players[game.currentPlayerIndex].playerBet,
                 isRaiseEnabled =
-                if (game.currentHighBet >= game.players[game.currentPlayerIndex].chipBuyInAmount)
-                    false
-                else
-                    true,
+                    (game.currentHighBet < game.players[game.currentPlayerIndex].chipBuyInAmount),
                 isCallEnabled =
-                    if(game.currentHighBet > game.players[game.currentPlayerIndex].playerBet)
-                        true
-                    else
-                        false,
-                playersBuyInChips = game.players.map { it.chipBuyInAmount },
-                playerStates = game.players.map { it.playerState }
+                    game.currentHighBet > game.players[game.currentPlayerIndex].playerBet,
             )
         }
     }
