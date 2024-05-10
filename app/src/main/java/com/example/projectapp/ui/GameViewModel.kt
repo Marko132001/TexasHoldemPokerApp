@@ -75,8 +75,11 @@ class GameViewModel : ViewModel() {
     }
 
     private fun updateBettingRound() {
-        if(game.isCurrentRoundFinished()) {
-            round = game.nextRoundInit(round)
+
+        val nextRound = game.nextRoundInit(round)
+
+        if(nextRound != round) {
+            round = nextRound
 
             _uiState.update { currentState ->
                 currentState.copy(
@@ -91,7 +94,7 @@ class GameViewModel : ViewModel() {
 
             Log.d("ROUND", "$round")
 
-            if(round == GameRound.SHOWDOWN) {
+            if (round == GameRound.SHOWDOWN) {
                 game.assignChipsToWinner(game.rankCardHands())
 
 
@@ -101,9 +104,6 @@ class GameViewModel : ViewModel() {
             }
         }
 
-        Log.d("Player1", game.players[0].toString())
-        Log.d("Player2", game.players[1].toString())
-        Log.d("Player3", game.players[2].toString())
     }
 
     private fun updateAvailableActions() {
@@ -135,42 +135,35 @@ class GameViewModel : ViewModel() {
     }
 
     fun handleCallAction() {
-        Log.d("CALL", "${game.players[game.currentPlayerIndex].user.username} called for ${game.currentHighBet}$")
         game.updatePot(game.players[game.currentPlayerIndex].call(game.currentHighBet))
-        game.iterateCurrentPlayerIndex()
 
-        updateAvailableActions()
         updateBettingRound()
+        updateAvailableActions()
     }
 
     fun handleRaiseAction() {
-        Log.d("RAISE", "${game.players[game.currentPlayerIndex].user.username} raised for $raiseAmount$")
         game.updatePot(game.players[game.currentPlayerIndex]
             .raise(game.currentHighBet, raiseAmount)
         )
         game.currentHighBet = game.players[game.currentPlayerIndex].playerBet
         game.raiseFlag = true
-        game.iterateCurrentPlayerIndex()
 
+        updateBettingRound()
         updateAvailableActions()
     }
 
     fun handleCheckAction() {
-        Log.d("CHECK", "${game.players[game.currentPlayerIndex].user.username} checked")
         game.players[game.currentPlayerIndex].check()
-        game.iterateCurrentPlayerIndex()
 
-        updateAvailableActions()
         updateBettingRound()
+        updateAvailableActions()
     }
 
     fun handleFoldAction() {
-        Log.d("FOLD", "${game.players[game.currentPlayerIndex].user.username} folded")
         game.players[game.currentPlayerIndex].fold()
-        game.iterateCurrentPlayerIndex()
 
-        updateAvailableActions()
         updateBettingRound()
+        updateAvailableActions()
     }
 
 

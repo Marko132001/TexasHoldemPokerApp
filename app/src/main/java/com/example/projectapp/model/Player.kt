@@ -1,5 +1,6 @@
 package com.example.projectapp.model
 
+import android.util.Log
 import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
@@ -32,6 +33,8 @@ class Player(val user: User, var chipBuyInAmount: Int) {
             chipBuyInAmount = 0
             playerBet += allInCall
 
+            Log.d("PLAYER", "${user.username} went ALL IN for ${allInCall} chips")
+
             return allInCall
         }
 
@@ -39,29 +42,51 @@ class Player(val user: User, var chipBuyInAmount: Int) {
         playerBet += betDifference
         chipBuyInAmount -= betDifference
 
+        Log.d("PLAYER", "${user.username} CALLED for ${betDifference} chips")
+
         return betDifference
     }
 
     fun raise(currentHighBet: Int, raiseAmount: Int): Int {
+        //TODO: Check the ALL_IN condition
+        if(raiseAmount == chipBuyInAmount) {
+            playerState = PlayerState.ALL_IN
+            val allInCall = chipBuyInAmount
+            chipBuyInAmount = 0
+            playerBet += allInCall
+
+            Log.d("PLAYER", "${user.username} went ALL IN for ${allInCall} chips")
+
+            return allInCall
+        }
         playerState = PlayerState.RAISE
         val betDifference = (currentHighBet - playerBet)
         playerBet += betDifference + raiseAmount
         chipBuyInAmount -= betDifference + raiseAmount
+
+        Log.d("PLAYER",
+            "${user.username} made a BET for ${betDifference + raiseAmount} chips")
 
         return betDifference + raiseAmount
     }
 
     fun check() {
         playerState = PlayerState.CHECK
+
+        Log.d("PLAYER", "${user.username} CHECKED")
     }
 
     fun fold() {
         playerState = PlayerState.FOLD
+
+        Log.d("PLAYER", "${user.username} FOLDED")
     }
 
     fun paySmallBlind(smallBlindValue: Int): Int {
         chipBuyInAmount -= smallBlindValue
         playerBet = smallBlindValue
+
+        Log.d("PLAYER", "${user.username} is SMALL BLIND")
 
         return smallBlindValue
     }
@@ -69,6 +94,8 @@ class Player(val user: User, var chipBuyInAmount: Int) {
     fun payBigBlind(bigBlindValue: Int): Int {
         chipBuyInAmount -= bigBlindValue
         playerBet = bigBlindValue
+
+        Log.d("PLAYER", "${user.username} is BIG BLIND")
 
         return bigBlindValue
     }

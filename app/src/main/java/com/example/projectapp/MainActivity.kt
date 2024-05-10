@@ -492,7 +492,8 @@ fun PlayerInformation(
             modifier = Modifier
                 .padding(horizontal = 10.dp),
             text =
-            if (playerState.name != PlayerState.NONE.name)
+            if (playerState.name != PlayerState.NONE.name
+                && playerState.name != PlayerState.IDLE.name)
                 playerState.name
             else
                 "",

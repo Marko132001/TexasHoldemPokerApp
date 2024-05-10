@@ -1,5 +1,6 @@
 package com.example.projectapp.model
 
+import android.util.Log
 import com.example.projectapp.data.GameRound
 import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
@@ -59,9 +60,16 @@ class Game() {
     fun preflopRoundInit() {
         raiseFlag = false
 
+        Log.d("GAME", "Initializing preflop round...")
+
         players.forEach {
             player ->
-                player.playerState = PlayerState.NONE
+                if(player.chipBuyInAmount == 0){
+                    player.playerState = PlayerState.IDLE;
+                }
+                else {
+                    player.playerState = PlayerState.NONE
+                }
                 player.playerHandRank = Pair(HandRankings.HIGH_CARD, 7462)
                 player.playerBet = 0
         }
@@ -72,19 +80,25 @@ class Game() {
         generateHoleCards(cards)
         generateCommunityCards(cards)
 
-        currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.UNDER_THE_GUN)
-        endRoundIndex = getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND + 1)
+        var smallBlindIndex = getPlayerRolePos(dealerButtonPos)
+        var bigBlindIndex = getPlayerRolePos(smallBlindIndex)
+
+        currentPlayerIndex = getPlayerRolePos(bigBlindIndex)
+        endRoundIndex = currentPlayerIndex
         potAmount = 0
         currentHighBet = 0
 
+        Log.d("GAME", "Small blind index: $smallBlindIndex")
+        Log.d("GAME", "Big blind index: $bigBlindIndex")
+        Log.d("GAME", "Current player index: $currentPlayerIndex")
 
         updatePot(
-            players[getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)]
+            players[smallBlindIndex]
                 .paySmallBlind(smallBlind)
         )
 
         updatePot(
-            players[getPlayerRolePos(PlayerRoleOffsets.BIG_BLIND)]
+            players[bigBlindIndex]
                 .payBigBlind(bigBlind)
         )
         currentHighBet = bigBlind
@@ -98,41 +112,77 @@ class Game() {
             throw Exception("Not enough players")
         }
 
-        var countFolds = 0
-        players.forEach {
-                player ->
-            player.playerBet = 0
-            if(player.playerState != PlayerState.FOLD){
-                player.playerState = PlayerState.NONE
-            }
-            else{
-                countFolds++
-            }
-        }
-
-        if(countFolds == players.size - 1){
+        if(showdownEdgeCases()){
+            Log.d("GAME", "Moving to showdown round. No more player actions available.")
             return GameRound.SHOWDOWN
         }
 
+        iterateCurrentPlayerIndex()
+
+        if(!isCurrentRoundFinished()){
+            Log.d("GAME", "Current round is not finished yet.")
+            return round
+        }
+
+        Log.d("GAME", "Initializing next round...")
+
         raiseFlag = false
 
-        currentPlayerIndex = getPlayerRolePos(PlayerRoleOffsets.SMALL_BLIND)
-
-        if(players[currentPlayerIndex].playerState == PlayerState.FOLD){
-            iterateCurrentPlayerIndex()
+        var countPlayersWithActions = 0
+        players.forEach {
+                player ->
+                    player.playerBet = 0
+                    if(player.playerState != PlayerState.FOLD
+                        && player.playerState != PlayerState.ALL_IN
+                        && player.playerState != PlayerState.IDLE
+                    ){
+                        player.playerState = PlayerState.NONE
+                        countPlayersWithActions++
+                    }
         }
+
+        if(countPlayersWithActions <= 1){
+            Log.d("GAME", "Moving to showdown round. No more player actions available.")
+            return GameRound.SHOWDOWN
+        }
+
+        Log.d("GAME", "Updating current player index...")
+
+        currentPlayerIndex = getPlayerRolePos(dealerButtonPos)
+
+        Log.d("GAME", "Current player index: $currentPlayerIndex")
+
         endRoundIndex = currentPlayerIndex
 
         currentHighBet = 0
 
+        Log.d("GAME", "Next round: ${round.nextRound().name}")
+
         return round.nextRound()
     }
 
-    fun isCurrentRoundFinished(): Boolean {
+    private fun showdownEdgeCases(): Boolean {
+        Log.d("GAME", "Checking for showdown round edge cases...")
+        val countFolds = players.count {
+            it.playerState == PlayerState.FOLD
+                    || it.playerState == PlayerState.IDLE
+        }
+
+        if(countFolds == players.size - 1){
+            return true
+        }
+
+        return players.count {
+            it.playerState == PlayerState.FOLD
+                    || it.playerState == PlayerState.ALL_IN
+                    || it.playerState == PlayerState.IDLE
+        } == players.size
+
+    }
+
+    private fun isCurrentRoundFinished(): Boolean {
         return !((currentPlayerIndex != endRoundIndex && !raiseFlag) ||
                 (players[currentPlayerIndex].playerBet != currentHighBet))
-                || (players.count { it.playerState == PlayerState.FOLD } == players.size - 1)
-
     }
 
     private fun shuffleCardsDeck(): List<PlayingCard> {
@@ -171,18 +221,41 @@ class Game() {
         potAmount += playerBet
     }
 
-    fun iterateCurrentPlayerIndex(){
+    private fun iterateCurrentPlayerIndex(){
+        Log.d("GAME",
+            "Iterating current player index. Current player index: $currentPlayerIndex")
         do{
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size
-        }while(players[currentPlayerIndex].playerState == PlayerState.FOLD)
+        }while(
+            players[currentPlayerIndex].playerState == PlayerState.FOLD
+            || players[currentPlayerIndex].playerState == PlayerState.ALL_IN
+            || players[currentPlayerIndex].playerState == PlayerState.IDLE
+        )
+        Log.d("GAME",
+            "Next player index: $currentPlayerIndex")
     }
 
     private fun updateDealerButtonPos() {
-        dealerButtonPos = (dealerButtonPos + 1) % players.size
+        Log.d("GAME",
+            "Updating dealer button position. Current dealer button index: $dealerButtonPos")
+        do {
+            dealerButtonPos = (dealerButtonPos + 1) % players.size
+        }while(
+            players[dealerButtonPos].playerState == PlayerState.IDLE
+        )
+        Log.d("GAME", "Next dealer button index: $dealerButtonPos")
     }
 
     private fun getPlayerRolePos(playerRoleOffset: Int): Int {
-        return (dealerButtonPos + playerRoleOffset) % players.size
+        var playerIndex = playerRoleOffset
+        do {
+            playerIndex = (playerIndex + 1) % players.size
+        }while(
+            players[playerIndex].playerState == PlayerState.FOLD
+                || players[playerIndex].playerState == PlayerState.ALL_IN
+                || players[playerIndex].playerState == PlayerState.IDLE
+        )
+        return playerIndex
     }
 
     private fun combinationUtil(
@@ -224,7 +297,8 @@ class Game() {
         val winner: MutableList<Player> = mutableListOf(players[0])
         players.forEach {
             player ->
-                if(player.playerState != PlayerState.FOLD) {
+                if(player.playerState != PlayerState.FOLD
+                    && player.playerState != PlayerState.IDLE) {
                     combinationUtil(
                         communityCards, tmpCardComb, 0,
                         CardConstants.COMMUNITY_CARDS - 1, 0,
