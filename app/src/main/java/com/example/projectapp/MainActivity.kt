@@ -4,9 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -17,6 +17,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.height
@@ -31,7 +32,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.rotate
@@ -140,7 +143,10 @@ fun PokerApp(
             if (gameUiState.dealerButtonPos == 0)
                 gameUiState.dealerButtonPos
             else
-                -1
+                -1,
+            isActivePlayer =
+                gameUiState.currentPlayerIndex == 0 && gameUiState.round != GameRound.SHOWDOWN,
+            timerProgress = gameViewModel.timerProgress
         )
         if(gameUiState.players.getOrNull(1) != null) {
             CardHandOpponent(
@@ -153,8 +159,8 @@ fun PokerApp(
                     bottom.linkTo(opponentHand1.top)
                 },
                 infoModifier = Modifier.constrainAs(opponentInfo1) {
-                    end.linkTo(opponentHand1.end, margin = (-60).dp)
-                    top.linkTo(opponentHand1.bottom)
+                    start.linkTo(parent.start, margin = 5.dp)
+                    bottom.linkTo(parent.bottom, margin = 50.dp)
                 },
                 player = gameUiState.players[1],
                 dealerButtonPos =
@@ -162,23 +168,26 @@ fun PokerApp(
                     gameUiState.dealerButtonPos
                 else
                     -1,
+                isActivePlayer =
+                    gameUiState.currentPlayerIndex == 1 && gameUiState.round != GameRound.SHOWDOWN,
                 context = context,
-                round = gameUiState.round
+                round = gameUiState.round,
+                timerProgress = gameViewModel.timerProgress
             )
         }
         if(gameUiState.players.getOrNull(2) != null) {
             CardHandOpponent(
                 modifier = Modifier.constrainAs(opponentHand2) {
                     top.linkTo(parent.top, margin = 70.dp)
-                    start.linkTo(opponentHand1.start, margin = 30.dp)
+                    start.linkTo(parent.start, margin = 125.dp)
                 },
                 chipValueModifier = Modifier.constrainAs(opponentChipValue2) {
                     start.linkTo(opponentHand2.end, margin = 30.dp)
                     bottom.linkTo(opponentHand2.bottom)
                 },
                 infoModifier = Modifier.constrainAs(opponentInfo2) {
-                    end.linkTo(opponentHand2.end, margin = (-30).dp)
-                    bottom.linkTo(opponentHand2.top, margin = (-30).dp)
+                    start.linkTo(parent.start, margin = 5.dp)
+                    top.linkTo(parent.top, margin = 5.dp)
                 },
                 player = gameUiState.players[2],
                 dealerButtonPos =
@@ -186,23 +195,26 @@ fun PokerApp(
                     gameUiState.dealerButtonPos
                 else
                     -1,
+                isActivePlayer =
+                    gameUiState.currentPlayerIndex == 2 && gameUiState.round != GameRound.SHOWDOWN,
                 context = context,
-                round = gameUiState.round
+                round = gameUiState.round,
+                timerProgress = gameViewModel.timerProgress
             )
         }
         if(gameUiState.players.getOrNull(3) != null) {
             CardHandOpponent(
                 modifier = Modifier.constrainAs(opponentHand3) {
-                    top.linkTo(parent.top, margin = 70.dp)
-                    end.linkTo(opponentHand4.start, margin = 10.dp)
+                    top.linkTo(parent.top, margin = 78.dp)
+                    end.linkTo(parent.end, margin = 140.dp)
                 },
                 chipValueModifier = Modifier.constrainAs(opponentChipValue3) {
                     end.linkTo(opponentHand3.start, margin = 20.dp)
                     bottom.linkTo(opponentHand3.bottom)
                 },
                 infoModifier = Modifier.constrainAs(opponentInfo3) {
-                    start.linkTo(opponentHand3.end)
-                    bottom.linkTo(opponentHand3.top, margin = (-30).dp)
+                    end.linkTo(parent.end)
+                    top.linkTo(parent.top)
                 },
                 player = gameUiState.players[3],
                 dealerButtonPos =
@@ -210,8 +222,11 @@ fun PokerApp(
                     gameUiState.dealerButtonPos
                 else
                     -1,
+                isActivePlayer =
+                    gameUiState.currentPlayerIndex == 3 && gameUiState.round != GameRound.SHOWDOWN,
                 context = context,
-                round = gameUiState.round
+                round = gameUiState.round,
+                timerProgress = gameViewModel.timerProgress
             )
         }
         if(gameUiState.players.getOrNull(4) != null) {
@@ -225,8 +240,8 @@ fun PokerApp(
                     bottom.linkTo(opponentHand4.top, margin = 15.dp)
                 },
                 infoModifier = Modifier.constrainAs(opponentInfo4) {
-                    start.linkTo(opponentHand4.start, margin = (-30).dp)
-                    top.linkTo(opponentHand4.bottom)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(parent.bottom, margin = 40.dp)
                 },
                 player = gameUiState.players[4],
                 dealerButtonPos =
@@ -235,7 +250,10 @@ fun PokerApp(
                 else
                     -1,
                 context = context,
-                round = gameUiState.round
+                isActivePlayer =
+                    gameUiState.currentPlayerIndex == 4 && gameUiState.round != GameRound.SHOWDOWN,
+                round = gameUiState.round,
+                timerProgress = gameViewModel.timerProgress
             )
         }
 
@@ -318,7 +336,8 @@ fun ActionButtons(
                 shape = RectangleShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.DarkGray
-                )
+                ),
+                contentPadding = PaddingValues(horizontal = 37.dp)
             ) {
                 Text(text = "RAISE")
             }
@@ -424,7 +443,9 @@ fun PlayerInformation(
     playerChips: Int,
     playerState: PlayerState,
     playerHandRank: HandRankings,
-    dealerButtonPos: Int
+    dealerButtonPos: Int,
+    isActivePlayer: Boolean,
+    timerProgress: Float
 ) {
     Column (Modifier.padding(10.dp)){
         OutlinedCard(
@@ -453,24 +474,42 @@ fun PlayerInformation(
                     alignment = Alignment.Center
                 )
 
-                Column {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp),
-                        text = username,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        fontSize = 13.sp
-                    )
+                Box {
+                    Column {
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp),
+                            text = username,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 13.sp
+                        )
 
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp),
-                        text = playerChips.toString(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
-                    )
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp),
+                            text = playerChips.toString(),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                    }
+
+                    if (isActivePlayer) {
+                        val animatedProgress = animateFloatAsState(
+                            targetValue = timerProgress,
+                            animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
+                        ).value
+
+                        LinearProgressIndicator(
+                            progress = animatedProgress,
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            color = Color.Yellow.copy(alpha = 0.2F),
+                            trackColor = Color.Transparent
+                        )
+
+                    }
                 }
 
             }
@@ -501,8 +540,6 @@ fun PlayerInformation(
 
 }
 
-
-
 @Composable
 fun CardHandPlayer(
     context: Context,
@@ -510,7 +547,9 @@ fun CardHandPlayer(
     chipValueModifier: Modifier,
     infoModifier: Modifier,
     player: Player,
-    dealerButtonPos: Int
+    dealerButtonPos: Int,
+    isActivePlayer: Boolean,
+    timerProgress: Float
 ){
 
     val holeCards = player.getHoleCardsLabels()
@@ -559,7 +598,9 @@ fun CardHandPlayer(
             player.chipBuyInAmount,
             player.playerState,
             player.playerHandRank.first,
-            dealerButtonPos
+            dealerButtonPos,
+            isActivePlayer,
+            timerProgress
         )
     }
 
@@ -578,8 +619,10 @@ fun CardHandOpponent(
     infoModifier: Modifier,
     player: Player,
     dealerButtonPos: Int,
+    isActivePlayer: Boolean,
     context: Context,
-    round: GameRound
+    round: GameRound,
+    timerProgress: Float
 ){
 
     if(round == GameRound.SHOWDOWN &&
@@ -656,7 +699,9 @@ fun CardHandOpponent(
             player.chipBuyInAmount,
             player.playerState,
             player.playerHandRank.first,
-            dealerButtonPos
+            dealerButtonPos,
+            isActivePlayer,
+            timerProgress
         )
     }
 

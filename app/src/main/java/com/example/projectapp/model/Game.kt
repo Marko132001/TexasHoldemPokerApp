@@ -124,10 +124,6 @@ class Game() {
 
         Log.d("GAME", "Initializing next round...")
 
-        raiseFlag = false
-        currentPlayerIndex = -1
-        endRoundIndex = -1
-
         var countPlayersWithActions = 0
         players.forEach {
                 player ->
@@ -145,6 +141,10 @@ class Game() {
             Log.d("GAME", "Moving to showdown round. No more player actions available.")
             return GameRound.SHOWDOWN
         }
+
+        raiseFlag = false
+        currentPlayerIndex = -1
+        endRoundIndex = -1
 
         Log.d("GAME", "Updating current player index...")
 

@@ -1,27 +1,23 @@
 package com.example.projectapp.ui
 
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.projectapp.data.GameRound
-import com.example.projectapp.data.PlayerState
 import com.example.projectapp.model.Game
 import com.example.projectapp.model.Player
 import com.example.projectapp.model.User
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.runBlocking
-import java.util.Timer
-import kotlin.concurrent.schedule
-import kotlin.concurrent.timerTask
+import kotlinx.coroutines.launch
 
 class GameViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GameUiState())
@@ -32,11 +28,20 @@ class GameViewModel : ViewModel() {
 
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
+    var timerProgress by mutableFloatStateOf(1.0f)
+    private lateinit var timerJob: Job
 
-    private val handler = Handler(Looper.getMainLooper())
+    //private val handler = Handler(Looper.getMainLooper())
 
     init {
         initGame()
+    }
+
+    private suspend fun timerCountdown() {
+        for (i in 100 downTo 0) {
+            timerProgress = i.toFloat() / 100
+            delay(100)
+        }
     }
 
     private fun initGame() {
@@ -81,16 +86,14 @@ class GameViewModel : ViewModel() {
             isFoldEnabled = true
         )
 
-        handler.postDelayed(
-            {
-                handleFoldAction()
-            }, 10000
-        )
+        timerJob = viewModelScope.launch {
+            timerCountdown()
+            handleFoldAction()
+        }
     }
 
     private fun updateBettingRound() {
-
-        handler.removeCallbacksAndMessages(null)
+        timerJob.cancel()
         val nextRound = game.nextRoundInit(round)
 
         if(nextRound == GameRound.SHOWDOWN){
@@ -103,11 +106,13 @@ class GameViewModel : ViewModel() {
                     communityCards = game.showStreet(round).map { it.cardLabel }
                 )
             }
-            handler.postDelayed(
-                {
-                    resetGame()
-                }, 4000
-            )
+
+            timerJob = viewModelScope.launch {
+                delay(4000)
+                timerJob.cancel()
+                resetGame()
+            }
+
         }
         else if(nextRound != round) {
             round = nextRound
@@ -123,17 +128,15 @@ class GameViewModel : ViewModel() {
 
         updateAvailableActions()
         if(round != GameRound.SHOWDOWN){
-
-            handler.postDelayed(
-                {
-                    if(_uiState.value.isCheckEnabled) {
-                        handleCheckAction()
-                    }
-                    else{
-                        handleFoldAction()
-                    }
-                }, 10000
-            )
+            timerJob = viewModelScope.launch {
+                timerCountdown()
+                if(_uiState.value.isCheckEnabled) {
+                    handleCheckAction()
+                }
+                else{
+                    handleFoldAction()
+                }
+            }
         }
     }
 
