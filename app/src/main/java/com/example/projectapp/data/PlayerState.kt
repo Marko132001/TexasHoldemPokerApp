@@ -1,5 +1,12 @@
 package com.example.projectapp.data
 
-enum class PlayerState {
-    CHECK, FOLD, ALL_IN, RAISE, CALL, INACTIVE, SPECTATOR
+enum class PlayerState(val label: String) {
+    CHECK("CHECK"),
+    FOLD("FOLD"),
+    ALL_IN("ALL IN"),
+    RAISE("RAISE"),
+    CALL("CALL"),
+    INACTIVE("INACTIVE"),
+    SPECTATOR("SPECTATOR"),
+    WINNER("WINNER")
 }

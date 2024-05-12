@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -47,6 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.projectapp.data.GameRound
+import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.model.Player
 import com.example.projectapp.ui.GameUiState
@@ -158,7 +161,9 @@ fun PokerApp(
                 if (gameUiState.dealerButtonPos == 1)
                     gameUiState.dealerButtonPos
                 else
-                    -1
+                    -1,
+                context = context,
+                round = gameUiState.round
             )
         }
         if(gameUiState.players.getOrNull(2) != null) {
@@ -180,7 +185,9 @@ fun PokerApp(
                 if (gameUiState.dealerButtonPos == 2)
                     gameUiState.dealerButtonPos
                 else
-                    -1
+                    -1,
+                context = context,
+                round = gameUiState.round
             )
         }
         if(gameUiState.players.getOrNull(3) != null) {
@@ -202,7 +209,9 @@ fun PokerApp(
                 if (gameUiState.dealerButtonPos == 3)
                     gameUiState.dealerButtonPos
                 else
-                    -1
+                    -1,
+                context = context,
+                round = gameUiState.round
             )
         }
         if(gameUiState.players.getOrNull(4) != null) {
@@ -224,7 +233,9 @@ fun PokerApp(
                 if (gameUiState.dealerButtonPos == 4)
                     gameUiState.dealerButtonPos
                 else
-                    -1
+                    -1,
+                context = context,
+                round = gameUiState.round
             )
         }
 
@@ -266,6 +277,7 @@ fun ActionButtons(
             onClick = {
                 gameViewModel.handleFoldAction()
             },
+            enabled = gameUiState.isFoldEnabled,
             shape = RectangleShape,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray
@@ -398,7 +410,7 @@ fun ChipValue(modifier: Modifier, chipsAmount: Int) {
 fun TableBackground(){
     Image(
         modifier = Modifier
-        .fillMaxSize()
+            .fillMaxSize()
             .background(color = Color(0xff781008)),
         painter = painterResource(R.drawable.poker_table),
         contentScale = ContentScale.FillBounds,
@@ -411,6 +423,7 @@ fun PlayerInformation(
     username: String,
     playerChips: Int,
     playerState: PlayerState,
+    playerHandRank: HandRankings,
     dealerButtonPos: Int
 ) {
     Column (Modifier.padding(10.dp)){
@@ -418,7 +431,11 @@ fun PlayerInformation(
             colors = CardDefaults.cardColors(
                 containerColor = Color(0x80030303)
             ),
-            border = BorderStroke(1.dp, Color.Black),
+            border =
+                if(playerState.name == PlayerState.WINNER.name)
+                    BorderStroke(2.dp, Color(0xffbdb824))
+                else
+                    BorderStroke(1.dp, Color.Black),
             shape = RoundedCornerShape(10),
             modifier = Modifier
                 .width(150.dp)
@@ -460,12 +477,12 @@ fun PlayerInformation(
         }
 
         Text(
-            modifier = Modifier
-                .padding(horizontal = 10.dp),
             text =
-            if (playerState.name != PlayerState.INACTIVE.name
+            if(playerState.name == PlayerState.WINNER.name)
+                playerHandRank.label
+            else if (playerState.name != PlayerState.INACTIVE.name
                 && playerState.name != PlayerState.SPECTATOR.name)
-                playerState.name
+                playerState.label
             else
                 "",
             fontSize = 17.sp,
@@ -541,6 +558,7 @@ fun CardHandPlayer(
             player.user.username,
             player.chipBuyInAmount,
             player.playerState,
+            player.playerHandRank.first,
             dealerButtonPos
         )
     }
@@ -559,28 +577,76 @@ fun CardHandOpponent(
     chipValueModifier: Modifier,
     infoModifier: Modifier,
     player: Player,
-    dealerButtonPos: Int
+    dealerButtonPos: Int,
+    context: Context,
+    round: GameRound
 ){
-    val opponentCard = painterResource(R.drawable.blue2)
-    Box(
-        modifier = modifier
-    ) {
-        Image(
-            modifier = Modifier
-                .size(30.dp),
-            painter = opponentCard,
-            contentDescription = null
-        )
 
-        Image(
-            modifier = Modifier
-                .size(30.dp)
-                .absoluteOffset(x = 20.dp)
-                .rotate(4.0F),
-            painter = opponentCard,
-            contentDescription = null
-        )
+    if(round == GameRound.SHOWDOWN &&
+        (player.playerState != PlayerState.FOLD && player.playerState != PlayerState.SPECTATOR)
+    ){
+        val holeCards = player.getHoleCardsLabels()
+
+        val firstCardId: Int = remember(holeCards.first) {
+            context.resources.getIdentifier(
+                holeCards.first,
+                "drawable",
+                context.packageName
+            )
+        }
+
+        val secondCardId: Int = remember(holeCards.second) {
+            context.resources.getIdentifier(
+                holeCards.second,
+                "drawable",
+                context.packageName
+            )
+        }
+
+        Box(
+            modifier = modifier
+        ) {
+            Image(
+                modifier = Modifier
+                    .size(60.dp),
+                painter = painterResource(id = firstCardId),
+                contentDescription = null
+            )
+
+            Image(
+                modifier = Modifier
+                    .size(60.dp)
+                    .absoluteOffset(x = 35.dp, y = 5.dp)
+                    .rotate(10.0F),
+                painter = painterResource(id = secondCardId),
+                contentDescription = null
+            )
+        }
     }
+    else{
+        val opponentCard = painterResource(R.drawable.blue2)
+
+        Box(
+            modifier = modifier
+        ) {
+            Image(
+                modifier = Modifier
+                    .size(30.dp),
+                painter = opponentCard,
+                contentDescription = null
+            )
+
+            Image(
+                modifier = Modifier
+                    .size(30.dp)
+                    .absoluteOffset(x = 20.dp)
+                    .rotate(4.0F),
+                painter = opponentCard,
+                contentDescription = null
+            )
+        }
+    }
+
 
     Box (
         modifier = infoModifier
@@ -589,6 +655,7 @@ fun CardHandOpponent(
             player.user.username,
             player.chipBuyInAmount,
             player.playerState,
+            player.playerHandRank.first,
             dealerButtonPos
         )
     }

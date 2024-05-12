@@ -41,10 +41,10 @@ class Game() {
     fun playerQuit(player: Player) {
         if(players.size > 0){
             if(players.indexOf(player) == endRoundIndex){
-                endRoundIndex = (endRoundIndex + 1) % players.size
+                endRoundIndex = getPlayerRolePosition(endRoundIndex)
             }
             if(players.indexOf(player) == currentPlayerIndex){
-                iterateCurrentPlayerIndex()
+                currentPlayerIndex = getPlayerRolePosition(currentPlayerIndex)
             }
             players.remove(player)
             println("Player ${player.user.username} has left the game.")
@@ -55,6 +55,9 @@ class Game() {
         raiseFlag = false
 
         Log.d("GAME", "Initializing preflop round...")
+
+        currentPlayerIndex = -1
+        endRoundIndex = -1
 
         players.forEach {
             player ->
@@ -68,7 +71,7 @@ class Game() {
                 player.playerBet = 0
         }
 
-        updateDealerButtonPosition()
+        dealerButtonPos = getPlayerRolePosition(dealerButtonPos)
 
         val cards: List<PlayingCard> = shuffleCardsDeck()
         generateHoleCards(cards)
@@ -111,9 +114,10 @@ class Game() {
             return GameRound.SHOWDOWN
         }
 
-        iterateCurrentPlayerIndex()
+        currentPlayerIndex = getPlayerRolePosition(currentPlayerIndex)
+        Log.d("GAME", "Current player index: $currentPlayerIndex")
 
-        if(!isCurrentRoundFinished()){
+        if(currentPlayerIndex != -1 && !checkPlayerHighBet(currentPlayerIndex)){
             Log.d("GAME", "Current round is not finished yet.")
             return round
         }
@@ -121,6 +125,8 @@ class Game() {
         Log.d("GAME", "Initializing next round...")
 
         raiseFlag = false
+        currentPlayerIndex = -1
+        endRoundIndex = -1
 
         var countPlayersWithActions = 0
         players.forEach {
@@ -174,9 +180,31 @@ class Game() {
 
     }
 
-    private fun isCurrentRoundFinished(): Boolean {
-        return !((currentPlayerIndex != endRoundIndex && !raiseFlag) ||
-                (players[currentPlayerIndex].playerBet != currentHighBet))
+    private fun checkEndRoundIndex(playerIndex: Int): Boolean {
+        Log.d("GAME", "Checking end round index.")
+        Log.d("GAME", "Player index: $playerIndex; End round index: $endRoundIndex")
+        return playerIndex == endRoundIndex && !raiseFlag
+    }
+
+    private fun checkPlayerHighBet(playerIndex: Int): Boolean {
+        Log.d("GAME", "Checking player high bet.")
+        Log.d("GAME", "Player bet: ${players[playerIndex].playerBet}; High bet: $currentHighBet")
+        return players[playerIndex].playerBet == currentHighBet && raiseFlag
+    }
+
+    private fun getPlayerRolePosition(playerRoleStart: Int): Int {
+        var playerRoleIndex = playerRoleStart
+        do {
+            playerRoleIndex = (playerRoleIndex + 1) % players.size
+            if(checkEndRoundIndex(playerRoleIndex)){
+                return -1
+            }
+        }while(
+            players[playerRoleIndex].playerState == PlayerState.FOLD
+            || players[playerRoleIndex].playerState == PlayerState.ALL_IN
+            || players[playerRoleIndex].playerState == PlayerState.SPECTATOR
+        )
+        return playerRoleIndex
     }
 
     private fun shuffleCardsDeck(): List<PlayingCard> {
@@ -213,43 +241,6 @@ class Game() {
 
     fun updatePot(playerBet: Int) {
         potAmount += playerBet
-    }
-
-    private fun iterateCurrentPlayerIndex(){
-        Log.d("GAME",
-            "Iterating current player index. Current player index: $currentPlayerIndex")
-        do{
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.size
-        }while(
-            players[currentPlayerIndex].playerState == PlayerState.FOLD
-            || players[currentPlayerIndex].playerState == PlayerState.ALL_IN
-            || players[currentPlayerIndex].playerState == PlayerState.SPECTATOR
-        )
-        Log.d("GAME",
-            "Next player index: $currentPlayerIndex")
-    }
-
-    private fun updateDealerButtonPosition() {
-        Log.d("GAME",
-            "Updating dealer button position. Current dealer button index: $dealerButtonPos")
-        do {
-            dealerButtonPos = (dealerButtonPos + 1) % players.size
-        }while(
-            players[dealerButtonPos].playerState == PlayerState.SPECTATOR
-        )
-        Log.d("GAME", "Next dealer button index: $dealerButtonPos")
-    }
-
-    private fun getPlayerRolePosition(playerRoleOffset: Int): Int {
-        var playerIndex = playerRoleOffset
-        do {
-            playerIndex = (playerIndex + 1) % players.size
-        }while(
-            players[playerIndex].playerState == PlayerState.FOLD
-                || players[playerIndex].playerState == PlayerState.ALL_IN
-                || players[playerIndex].playerState == PlayerState.SPECTATOR
-        )
-        return playerIndex
     }
 
     private fun combinationUtil(
@@ -314,52 +305,17 @@ class Game() {
     }
 
     fun assignChipsToWinner(winners: MutableList<Player>) {
-        if(winners.size == 1){
-            winners[0].assignChips(potAmount)
+        val splitPot = potAmount / winners.size
+        val leftoverChips = potAmount % winners.size
+        winners.forEach {
+            player ->
+                player.playerState = PlayerState.WINNER
+                player.assignChips(splitPot)
         }
-        else{
-            val splitPot = potAmount / 2
-            winners[0].assignChips(splitPot)
-            winners[1].assignChips(splitPot)
+
+        if(leftoverChips > 0){
+            players[getPlayerRolePosition(dealerButtonPos)].assignChips(leftoverChips)
         }
-    }
-
-    fun gameRoundSim() {
-        var raiseFlag = false
-
-        do{
-            println("Select: call, raise, check, fold")
-            var playerAction = readLine()!!
-
-            when(playerAction){
-                "call" -> {
-                    updatePot(players[currentPlayerIndex].call(currentHighBet))
-                }
-                "raise" -> {
-                    println("Enter raise amount: ")
-                    var raiseAmount = readLine()!!
-
-                    updatePot(players[currentPlayerIndex]
-                        .raise(currentHighBet, raiseAmount.toInt())
-                    )
-                    currentHighBet = players[currentPlayerIndex].playerBet
-                    raiseFlag = true
-                }
-                "check" -> players[currentPlayerIndex].check()
-                "fold" -> players[currentPlayerIndex].fold()
-            }
-
-            iterateCurrentPlayerIndex()
-
-            println(toString())
-            players.forEach {
-                player ->  println(player.toString())
-            }
-
-        }while((currentPlayerIndex != endRoundIndex && !raiseFlag) ||
-            (players[currentPlayerIndex].playerBet != currentHighBet)
-        )
-
     }
 
     override fun toString(): String {

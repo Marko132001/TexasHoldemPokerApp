@@ -1,5 +1,7 @@
 package com.example.projectapp.ui
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -7,13 +9,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.projectapp.data.GameRound
+import com.example.projectapp.data.PlayerState
 import com.example.projectapp.model.Game
 import com.example.projectapp.model.Player
 import com.example.projectapp.model.User
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
+import java.util.Timer
+import kotlin.concurrent.schedule
+import kotlin.concurrent.timerTask
 
 class GameViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GameUiState())
@@ -24,6 +32,8 @@ class GameViewModel : ViewModel() {
 
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
+
+    private val handler = Handler(Looper.getMainLooper())
 
     init {
         initGame()
@@ -57,45 +67,74 @@ class GameViewModel : ViewModel() {
         game.preflopRoundInit()
 
         _uiState.value = GameUiState(
+            round = round,
             potAmount = game.potAmount,
             bigBlind = game.bigBlind,
             currentHighBet = game.currentHighBet,
             dealerButtonPos = game.dealerButtonPos,
             players = game.players,
             currentPlayerIndex = game.currentPlayerIndex,
-            communityCards = game.showStreet(round).map { it.cardLabel }
+            communityCards = game.showStreet(round).map { it.cardLabel },
+            isRaiseEnabled = true,
+            isCallEnabled = true,
+            isCheckEnabled = false,
+            isFoldEnabled = true
+        )
+
+        handler.postDelayed(
+            {
+                handleFoldAction()
+            }, 10000
         )
     }
 
     private fun updateBettingRound() {
 
+        handler.removeCallbacksAndMessages(null)
         val nextRound = game.nextRoundInit(round)
 
-        if(nextRound != round) {
+        if(nextRound == GameRound.SHOWDOWN){
+            round = nextRound
+            game.assignChipsToWinner(game.rankCardHands())
+
+            _uiState.update { currentState ->
+                currentState.copy(
+                    round = round,
+                    communityCards = game.showStreet(round).map { it.cardLabel }
+                )
+            }
+            handler.postDelayed(
+                {
+                    resetGame()
+                }, 4000
+            )
+        }
+        else if(nextRound != round) {
             round = nextRound
 
             _uiState.update { currentState ->
                 currentState.copy(
-                    players = game.players,
-                    currentHighBet = game.currentHighBet,
-                    currentPlayerIndex = game.currentPlayerIndex,
+                    round = round,
                     communityCards = game.showStreet(round).map { it.cardLabel },
                     isRaiseEnabled = true
                 )
             }
-
-            Log.d("ROUND", "$round")
-
-            if (round == GameRound.SHOWDOWN) {
-                game.assignChipsToWinner(game.rankCardHands())
-
-
-                //TODO: Display winner in UI
-
-                resetGame()
-            }
         }
 
+        updateAvailableActions()
+        if(round != GameRound.SHOWDOWN){
+
+            handler.postDelayed(
+                {
+                    if(_uiState.value.isCheckEnabled) {
+                        handleCheckAction()
+                    }
+                    else{
+                        handleFoldAction()
+                    }
+                }, 10000
+            )
+        }
     }
 
     private fun updateAvailableActions() {
@@ -107,11 +146,15 @@ class GameViewModel : ViewModel() {
                 currentHighBet = game.currentHighBet,
                 currentPlayerIndex = game.currentPlayerIndex,
                 isCheckEnabled =
-                    game.currentHighBet <= game.players[game.currentPlayerIndex].playerBet,
+                    game.currentHighBet <= game.players[game.currentPlayerIndex].playerBet
+                            && round != GameRound.SHOWDOWN,
                 isRaiseEnabled =
-                    (game.currentHighBet < game.players[game.currentPlayerIndex].chipBuyInAmount),
+                    game.currentHighBet < game.players[game.currentPlayerIndex].chipBuyInAmount
+                            && round != GameRound.SHOWDOWN,
                 isCallEnabled =
-                    game.currentHighBet > game.players[game.currentPlayerIndex].playerBet,
+                    game.currentHighBet > game.players[game.currentPlayerIndex].playerBet
+                            && round != GameRound.SHOWDOWN,
+                isFoldEnabled = round != GameRound.SHOWDOWN
             )
         }
     }
@@ -120,7 +163,6 @@ class GameViewModel : ViewModel() {
         game.updatePot(game.players[game.currentPlayerIndex].call(game.currentHighBet))
 
         updateBettingRound()
-        updateAvailableActions()
     }
 
     fun handleRaiseAction() {
@@ -131,21 +173,18 @@ class GameViewModel : ViewModel() {
         game.raiseFlag = true
 
         updateBettingRound()
-        updateAvailableActions()
     }
 
     fun handleCheckAction() {
         game.players[game.currentPlayerIndex].check()
 
         updateBettingRound()
-        updateAvailableActions()
     }
 
     fun handleFoldAction() {
         game.players[game.currentPlayerIndex].fold()
 
         updateBettingRound()
-        updateAvailableActions()
     }
 
 
