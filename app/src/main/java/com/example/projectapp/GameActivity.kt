@@ -1,11 +1,9 @@
 package com.example.projectapp
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
@@ -40,7 +38,6 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -51,27 +48,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import com.example.projectapp.data.GameRound
-import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
-import com.example.projectapp.model.Player
 import com.example.projectapp.model.GameState
+import com.example.projectapp.model.PlayerDataState
 import com.example.projectapp.ui.GameViewModel
 import com.example.projectapp.ui.SliderWithLabel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -331,6 +319,17 @@ fun PokerApp(
             )
         }
     }
+    else{
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Waiting for more players...",
+                color = Color.Red
+            )
+        }
+    }
 
 }
 
@@ -347,8 +346,10 @@ fun ActionButtons(
     ){
         Button(
             onClick = {
-                gameViewModel.isRaiseSlider = false
-                gameViewModel.playerAction(PlayerState.FOLD.name, -1)
+                if(gameViewModel.timerProgress > 0.01f) {
+                    gameViewModel.isRaiseSlider = false
+                    gameViewModel.playerAction(PlayerState.FOLD.name, -1)
+                }
             },
             enabled = gameUiState.isFoldEnabled,
             shape = RectangleShape,
@@ -360,8 +361,10 @@ fun ActionButtons(
         }
         Button(
             onClick = {
-                gameViewModel.isRaiseSlider = false
-                gameViewModel.playerAction(PlayerState.CHECK.name, -1)
+                if(gameViewModel.timerProgress > 0.01f) {
+                    gameViewModel.isRaiseSlider = false
+                    gameViewModel.playerAction(PlayerState.CHECK.name, -1)
+                }
             },
             enabled = gameUiState.isCheckEnabled,
             shape = RectangleShape,
@@ -373,8 +376,10 @@ fun ActionButtons(
         }
         Button(
             onClick = {
-                gameViewModel.isRaiseSlider = false
-                gameViewModel.playerAction(PlayerState.CALL.name, -1)
+                if(gameViewModel.timerProgress > 0.01f) {
+                    gameViewModel.isRaiseSlider = false
+                    gameViewModel.playerAction(PlayerState.CALL.name, -1)
+                }
             },
             enabled = gameUiState.isCallEnabled,
             shape = RectangleShape,
@@ -387,7 +392,9 @@ fun ActionButtons(
         if(!gameViewModel.isRaiseSlider) {
             Button(
                 onClick = {
-                    gameViewModel.isRaiseSlider = true
+                    if(gameViewModel.timerProgress > 0.01f) {
+                        gameViewModel.isRaiseSlider = true
+                    }
                 },
                 enabled = gameUiState.isRaiseEnabled,
                 shape = RectangleShape,
@@ -402,8 +409,13 @@ fun ActionButtons(
         else{
             Button(
                 onClick = {
-                    gameViewModel.isRaiseSlider = false
-                    gameViewModel.playerAction(PlayerState.RAISE.name, gameViewModel.raiseAmount)
+                    if(gameViewModel.timerProgress > 0.01f) {
+                        gameViewModel.isRaiseSlider = false
+                        gameViewModel.playerAction(
+                            PlayerState.RAISE.name,
+                            gameViewModel.raiseAmount
+                        )
+                    }
                 },
                 enabled = gameUiState.isRaiseEnabled,
                 shape = RectangleShape,
@@ -500,7 +512,7 @@ fun PlayerInformation(
     username: String,
     playerChips: Int,
     playerState: PlayerState,
-    playerHandRank: HandRankings,
+    playerHandRank: String,
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
     gameViewModel: GameViewModel
@@ -509,7 +521,7 @@ fun PlayerInformation(
     if(isActivePlayer){
         gameViewModel.timerProgress = 1.0f
 
-        LaunchedEffect(key1 = gameViewModel.viewModelScope) {
+        LaunchedEffect(key1 = username) {
             gameViewModel.timerCountdown()
         }
     }
@@ -585,7 +597,7 @@ fun PlayerInformation(
         Text(
             text =
             if(playerState.name == PlayerState.WINNER.name)
-                playerHandRank.label
+                playerHandRank
             else if (playerState.name != PlayerState.INACTIVE.name
                 && playerState.name != PlayerState.SPECTATOR.name)
                 playerState.label
@@ -613,13 +625,13 @@ fun CardHandPlayer(
     modifier: Modifier,
     chipValueModifier: Modifier,
     infoModifier: Modifier,
-    player: Player,
+    player: PlayerDataState,
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
     gameViewModel: GameViewModel
 ){
 
-    val holeCards = player.getHoleCardsLabels()
+    val holeCards = player.holeCards
 
     val firstCardId: Int = remember(holeCards.first) {
         context.resources.getIdentifier(
@@ -664,7 +676,7 @@ fun CardHandPlayer(
             player.username,
             player.chipBuyInAmount,
             player.playerState,
-            player.playerHandRank.first,
+            player.playerHandRank,
             dealerButtonPos,
             isActivePlayer,
             gameViewModel
@@ -684,7 +696,7 @@ fun CardHandOpponent(
     modifier: Modifier,
     chipValueModifier: Modifier,
     infoModifier: Modifier,
-    player: Player,
+    player: PlayerDataState,
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
     context: Context,
@@ -695,7 +707,7 @@ fun CardHandOpponent(
     if(round == GameRound.SHOWDOWN &&
         (player.playerState != PlayerState.FOLD && player.playerState != PlayerState.SPECTATOR)
     ){
-        val holeCards = player.getHoleCardsLabels()
+        val holeCards = player.holeCards
 
         val firstCardId: Int = remember(holeCards.first) {
             context.resources.getIdentifier(
@@ -765,7 +777,7 @@ fun CardHandOpponent(
             player.username,
             player.chipBuyInAmount,
             player.playerState,
-            player.playerHandRank.first,
+            player.playerHandRank,
             dealerButtonPos,
             isActivePlayer,
             gameViewModel

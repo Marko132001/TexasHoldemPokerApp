@@ -1,7 +1,6 @@
 package com.example.projectapp.model
 
 import com.example.projectapp.data.GameRound
-import com.example.projectapp.model.Player
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,7 +10,7 @@ data class GameState(
     val bigBlind: Int = 0,
     val currentHighBet: Int = 0,
     val dealerButtonPos: Int = 0,
-    val players: List<Player> = listOf(),
+    val players: List<PlayerDataState> = listOf(),
     val currentPlayerIndex: Int = 0,
     val communityCards: List<String> = listOf(),
     val isCallEnabled: Boolean = true,
