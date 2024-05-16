@@ -1,10 +1,11 @@
-package com.example.projectapp.ui
+package com.example.projectapp.model
 
 import com.example.projectapp.data.GameRound
 import com.example.projectapp.model.Player
+import kotlinx.serialization.Serializable
 
-
-data class GameUiState(
+@Serializable
+data class GameState(
     val round: GameRound = GameRound.PREFLOP,
     val potAmount: Int = 0,
     val bigBlind: Int = 0,

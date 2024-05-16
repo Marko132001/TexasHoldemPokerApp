@@ -1,9 +1,11 @@
 package com.example.projectapp
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
@@ -32,10 +34,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -46,28 +51,49 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewModelScope
 import com.example.projectapp.data.GameRound
 import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.model.Player
-import com.example.projectapp.ui.GameUiState
+import com.example.projectapp.model.GameState
 import com.example.projectapp.ui.GameViewModel
 import com.example.projectapp.ui.SliderWithLabel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
-class MainActivity : ComponentActivity() {
+@AndroidEntryPoint
+class GameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val gameViewModel: GameViewModel = hiltViewModel<GameViewModel>()
+
+            val context = LocalContext.current
+            val activity = context as Activity
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+            val gameUiState by gameViewModel.state.collectAsStateWithLifecycle()
+
+            val isConnecting by gameViewModel.isConnecting.collectAsStateWithLifecycle()
+            val showConnectionError by gameViewModel.showConnectionError.collectAsStateWithLifecycle()
+
             Surface(
                 modifier = Modifier.fillMaxSize()
             ) {
-                PokerApp()
+                PokerApp(context, gameViewModel, gameUiState, isConnecting, showConnectionError)
             }
         }
     }
@@ -76,206 +102,234 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PokerApp(
-    gameViewModel: GameViewModel = viewModel()
+    context: Context,
+    gameViewModel: GameViewModel = hiltViewModel<GameViewModel>(),
+    gameUiState: GameState,
+    isConnecting: Boolean,
+    showConnectionError: Boolean
 ){
 
-    val context = LocalContext.current
-    val activity = context as Activity
-    activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-
-    val gameUiState by gameViewModel.uiState.collectAsStateWithLifecycle()
-
-
-    TableBackground()
-
-    ConstraintLayout(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        val (communityCards, playerHand, opponentHand1,
-            opponentHand2, opponentHand3, opponentHand4,
-            actionButtons
-        ) = createRefs()
-
-        val (
-            playerChipValue, opponentChipValue1, opponentChipValue2,
-            opponentChipValue3, opponentChipValue4, potChipValue
-        ) = createRefs()
-
-        val (
-            playerInfo, opponentInfo1, opponentInfo2,
-            opponentInfo3, opponentInfo4
-        ) = createRefs()
-
-        CommunityCards(
-            context,
-            gameUiState,
-            Modifier.constrainAs(communityCards){
-                centerHorizontallyTo(parent)
-                centerVerticallyTo(parent)
-            }
-        )
-
-        PotValue(
-            modifier = Modifier
-                .constrainAs(potChipValue) {
-                    centerHorizontallyTo(parent)
-                }
-                .padding(top = 90.dp),
-            gameUiState.potAmount
-        )
-
-        CardHandPlayer(
-            context,
-            modifier = Modifier.constrainAs(playerHand){
-                start.linkTo(actionButtons.start, margin = 10.dp)
-                bottom.linkTo(parent.bottom, margin = 30.dp)
-            },
-            chipValueModifier = Modifier.constrainAs(playerChipValue){
-                end.linkTo(playerHand.start, margin = 10.dp)
-                bottom.linkTo(playerHand.top)
-            },
-            infoModifier = Modifier.constrainAs(playerInfo){
-                end.linkTo(actionButtons.start)
-                bottom.linkTo(parent.bottom)
-            },
-            player = gameUiState.players[0],
-            dealerButtonPos =
-            if (gameUiState.dealerButtonPos == 0)
-                gameUiState.dealerButtonPos
-            else
-                -1,
-            isActivePlayer =
-                gameUiState.currentPlayerIndex == 0 && gameUiState.round != GameRound.SHOWDOWN,
-            timerProgress = gameViewModel.timerProgress
-        )
-        if(gameUiState.players.getOrNull(1) != null) {
-            CardHandOpponent(
-                modifier = Modifier.constrainAs(opponentHand1) {
-                    start.linkTo(parent.start, margin = 90.dp)
-                    bottom.linkTo(parent.bottom, margin = 140.dp)
-                },
-                chipValueModifier = Modifier.constrainAs(opponentChipValue1) {
-                    start.linkTo(opponentHand1.end, margin = 20.dp)
-                    bottom.linkTo(opponentHand1.top)
-                },
-                infoModifier = Modifier.constrainAs(opponentInfo1) {
-                    start.linkTo(parent.start, margin = 5.dp)
-                    bottom.linkTo(parent.bottom, margin = 50.dp)
-                },
-                player = gameUiState.players[1],
-                dealerButtonPos =
-                if (gameUiState.dealerButtonPos == 1)
-                    gameUiState.dealerButtonPos
-                else
-                    -1,
-                isActivePlayer =
-                    gameUiState.currentPlayerIndex == 1 && gameUiState.round != GameRound.SHOWDOWN,
-                context = context,
-                round = gameUiState.round,
-                timerProgress = gameViewModel.timerProgress
-            )
-        }
-        if(gameUiState.players.getOrNull(2) != null) {
-            CardHandOpponent(
-                modifier = Modifier.constrainAs(opponentHand2) {
-                    top.linkTo(parent.top, margin = 70.dp)
-                    start.linkTo(parent.start, margin = 125.dp)
-                },
-                chipValueModifier = Modifier.constrainAs(opponentChipValue2) {
-                    start.linkTo(opponentHand2.end, margin = 30.dp)
-                    bottom.linkTo(opponentHand2.bottom)
-                },
-                infoModifier = Modifier.constrainAs(opponentInfo2) {
-                    start.linkTo(parent.start, margin = 5.dp)
-                    top.linkTo(parent.top, margin = 5.dp)
-                },
-                player = gameUiState.players[2],
-                dealerButtonPos =
-                if (gameUiState.dealerButtonPos == 2)
-                    gameUiState.dealerButtonPos
-                else
-                    -1,
-                isActivePlayer =
-                    gameUiState.currentPlayerIndex == 2 && gameUiState.round != GameRound.SHOWDOWN,
-                context = context,
-                round = gameUiState.round,
-                timerProgress = gameViewModel.timerProgress
-            )
-        }
-        if(gameUiState.players.getOrNull(3) != null) {
-            CardHandOpponent(
-                modifier = Modifier.constrainAs(opponentHand3) {
-                    top.linkTo(parent.top, margin = 78.dp)
-                    end.linkTo(parent.end, margin = 140.dp)
-                },
-                chipValueModifier = Modifier.constrainAs(opponentChipValue3) {
-                    end.linkTo(opponentHand3.start, margin = 20.dp)
-                    bottom.linkTo(opponentHand3.bottom)
-                },
-                infoModifier = Modifier.constrainAs(opponentInfo3) {
-                    end.linkTo(parent.end)
-                    top.linkTo(parent.top)
-                },
-                player = gameUiState.players[3],
-                dealerButtonPos =
-                if (gameUiState.dealerButtonPos == 3)
-                    gameUiState.dealerButtonPos
-                else
-                    -1,
-                isActivePlayer =
-                    gameUiState.currentPlayerIndex == 3 && gameUiState.round != GameRound.SHOWDOWN,
-                context = context,
-                round = gameUiState.round,
-                timerProgress = gameViewModel.timerProgress
-            )
-        }
-        if(gameUiState.players.getOrNull(4) != null) {
-            CardHandOpponent(
-                modifier = Modifier.constrainAs(opponentHand4) {
-                    end.linkTo(parent.end, margin = 130.dp)
-                    bottom.linkTo(parent.bottom, margin = 130.dp)
-                },
-                chipValueModifier = Modifier.constrainAs(opponentChipValue4) {
-                    end.linkTo(opponentHand4.end)
-                    bottom.linkTo(opponentHand4.top, margin = 15.dp)
-                },
-                infoModifier = Modifier.constrainAs(opponentInfo4) {
-                    end.linkTo(parent.end)
-                    bottom.linkTo(parent.bottom, margin = 40.dp)
-                },
-                player = gameUiState.players[4],
-                dealerButtonPos =
-                if (gameUiState.dealerButtonPos == 4)
-                    gameUiState.dealerButtonPos
-                else
-                    -1,
-                context = context,
-                isActivePlayer =
-                    gameUiState.currentPlayerIndex == 4 && gameUiState.round != GameRound.SHOWDOWN,
-                round = gameUiState.round,
-                timerProgress = gameViewModel.timerProgress
+    if(showConnectionError) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Couldn't connect to the server",
+                color = Color.Red
             )
         }
 
-        ActionButtons(
-            actionButtons = Modifier.constrainAs(actionButtons) {
-                bottom.linkTo(parent.bottom)
-                end.linkTo(parent.end, margin = 3.dp)
-            },
-            gameViewModel,
-            gameUiState
-        )
     }
 
-    if(gameViewModel.isRaiseSlider) {
-        RaiseAmountSlider(
-            minimumRaise = gameUiState.bigBlind.toFloat(),
-            maximumRaise = (
-                gameUiState.players[gameUiState.currentPlayerIndex].chipBuyInAmount -
-                        (gameUiState.currentHighBet - gameUiState.players[gameUiState.currentPlayerIndex].playerBet)
-                    ).toFloat(),
-            gameViewModel = gameViewModel
-        )
+    if(isConnecting) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+
+    if(gameUiState.players.size > 1) {
+
+        LaunchedEffect(key1 = gameUiState.currentPlayerIndex, key2 = gameUiState.round) {
+            gameViewModel.isRaiseSlider = false
+        }
+
+        TableBackground()
+
+        ConstraintLayout(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val (communityCards, playerHand, opponentHand1,
+                opponentHand2, opponentHand3, opponentHand4,
+                actionButtons
+            ) = createRefs()
+
+            val (
+                playerChipValue, opponentChipValue1, opponentChipValue2,
+                opponentChipValue3, opponentChipValue4, potChipValue
+            ) = createRefs()
+
+            val (
+                playerInfo, opponentInfo1, opponentInfo2,
+                opponentInfo3, opponentInfo4
+            ) = createRefs()
+
+            CommunityCards(
+                context,
+                gameUiState,
+                Modifier.constrainAs(communityCards) {
+                    centerHorizontallyTo(parent)
+                    centerVerticallyTo(parent)
+                }
+            )
+
+            PotValue(
+                modifier = Modifier
+                    .constrainAs(potChipValue) {
+                        centerHorizontallyTo(parent)
+                    }
+                    .padding(top = 90.dp),
+                gameUiState.potAmount
+            )
+
+            CardHandPlayer(
+                context,
+                modifier = Modifier.constrainAs(playerHand) {
+                    start.linkTo(actionButtons.start, margin = 10.dp)
+                    bottom.linkTo(parent.bottom, margin = 30.dp)
+                },
+                chipValueModifier = Modifier.constrainAs(playerChipValue) {
+                    end.linkTo(playerHand.start, margin = 10.dp)
+                    bottom.linkTo(playerHand.top)
+                },
+                infoModifier = Modifier.constrainAs(playerInfo) {
+                    end.linkTo(actionButtons.start)
+                    bottom.linkTo(parent.bottom)
+                },
+                player = gameUiState.players[0],
+                dealerButtonPos =
+                if (gameUiState.dealerButtonPos == 0)
+                    gameUiState.dealerButtonPos
+                else
+                    -1,
+                isActivePlayer =
+                gameUiState.currentPlayerIndex == 0 && gameUiState.round != GameRound.SHOWDOWN,
+                gameViewModel = gameViewModel
+            )
+            if (gameUiState.players.getOrNull(1) != null) {
+                CardHandOpponent(
+                    modifier = Modifier.constrainAs(opponentHand1) {
+                        start.linkTo(parent.start, margin = 90.dp)
+                        bottom.linkTo(parent.bottom, margin = 140.dp)
+                    },
+                    chipValueModifier = Modifier.constrainAs(opponentChipValue1) {
+                        start.linkTo(opponentHand1.end, margin = 20.dp)
+                        bottom.linkTo(opponentHand1.top)
+                    },
+                    infoModifier = Modifier.constrainAs(opponentInfo1) {
+                        start.linkTo(parent.start, margin = 5.dp)
+                        bottom.linkTo(parent.bottom, margin = 50.dp)
+                    },
+                    player = gameUiState.players[1],
+                    dealerButtonPos =
+                    if (gameUiState.dealerButtonPos == 1)
+                        gameUiState.dealerButtonPos
+                    else
+                        -1,
+                    isActivePlayer =
+                    gameUiState.currentPlayerIndex == 1 && gameUiState.round != GameRound.SHOWDOWN,
+                    context = context,
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
+                )
+            }
+            if (gameUiState.players.getOrNull(2) != null) {
+                CardHandOpponent(
+                    modifier = Modifier.constrainAs(opponentHand2) {
+                        top.linkTo(parent.top, margin = 70.dp)
+                        start.linkTo(parent.start, margin = 125.dp)
+                    },
+                    chipValueModifier = Modifier.constrainAs(opponentChipValue2) {
+                        start.linkTo(opponentHand2.end, margin = 30.dp)
+                        bottom.linkTo(opponentHand2.bottom)
+                    },
+                    infoModifier = Modifier.constrainAs(opponentInfo2) {
+                        start.linkTo(parent.start, margin = 5.dp)
+                        top.linkTo(parent.top, margin = 5.dp)
+                    },
+                    player = gameUiState.players[2],
+                    dealerButtonPos =
+                    if (gameUiState.dealerButtonPos == 2)
+                        gameUiState.dealerButtonPos
+                    else
+                        -1,
+                    isActivePlayer =
+                    gameUiState.currentPlayerIndex == 2 && gameUiState.round != GameRound.SHOWDOWN,
+                    context = context,
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
+                )
+            }
+            if (gameUiState.players.getOrNull(3) != null) {
+                CardHandOpponent(
+                    modifier = Modifier.constrainAs(opponentHand3) {
+                        top.linkTo(parent.top, margin = 78.dp)
+                        end.linkTo(parent.end, margin = 140.dp)
+                    },
+                    chipValueModifier = Modifier.constrainAs(opponentChipValue3) {
+                        end.linkTo(opponentHand3.start, margin = 20.dp)
+                        bottom.linkTo(opponentHand3.bottom)
+                    },
+                    infoModifier = Modifier.constrainAs(opponentInfo3) {
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                    },
+                    player = gameUiState.players[3],
+                    dealerButtonPos =
+                    if (gameUiState.dealerButtonPos == 3)
+                        gameUiState.dealerButtonPos
+                    else
+                        -1,
+                    isActivePlayer =
+                    gameUiState.currentPlayerIndex == 3 && gameUiState.round != GameRound.SHOWDOWN,
+                    context = context,
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
+                )
+            }
+            if (gameUiState.players.getOrNull(4) != null) {
+                CardHandOpponent(
+                    modifier = Modifier.constrainAs(opponentHand4) {
+                        end.linkTo(parent.end, margin = 130.dp)
+                        bottom.linkTo(parent.bottom, margin = 130.dp)
+                    },
+                    chipValueModifier = Modifier.constrainAs(opponentChipValue4) {
+                        end.linkTo(opponentHand4.end)
+                        bottom.linkTo(opponentHand4.top, margin = 15.dp)
+                    },
+                    infoModifier = Modifier.constrainAs(opponentInfo4) {
+                        end.linkTo(parent.end)
+                        bottom.linkTo(parent.bottom, margin = 40.dp)
+                    },
+                    player = gameUiState.players[4],
+                    dealerButtonPos =
+                    if (gameUiState.dealerButtonPos == 4)
+                        gameUiState.dealerButtonPos
+                    else
+                        -1,
+                    context = context,
+                    isActivePlayer =
+                    gameUiState.currentPlayerIndex == 4 && gameUiState.round != GameRound.SHOWDOWN,
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
+                )
+            }
+
+            ActionButtons(
+                actionButtons = Modifier.constrainAs(actionButtons) {
+                    bottom.linkTo(parent.bottom)
+                    end.linkTo(parent.end, margin = 3.dp)
+                },
+                gameViewModel,
+                gameUiState
+            )
+        }
+
+        if (gameViewModel.isRaiseSlider) {
+            RaiseAmountSlider(
+                minimumRaise = gameUiState.bigBlind.toFloat(),
+                maximumRaise = (
+                        gameUiState.players[gameUiState.currentPlayerIndex].chipBuyInAmount -
+                                (gameUiState.currentHighBet - gameUiState.players[gameUiState.currentPlayerIndex].playerBet)
+                        ).toFloat(),
+                gameViewModel = gameViewModel
+            )
+        }
     }
 
 }
@@ -284,7 +338,7 @@ fun PokerApp(
 fun ActionButtons(
     actionButtons: Modifier,
     gameViewModel: GameViewModel,
-    gameUiState: GameUiState
+    gameUiState: GameState
 ) {
 
     Row(
@@ -293,7 +347,8 @@ fun ActionButtons(
     ){
         Button(
             onClick = {
-                gameViewModel.handleFoldAction()
+                gameViewModel.isRaiseSlider = false
+                gameViewModel.playerAction(PlayerState.FOLD.name, -1)
             },
             enabled = gameUiState.isFoldEnabled,
             shape = RectangleShape,
@@ -305,7 +360,8 @@ fun ActionButtons(
         }
         Button(
             onClick = {
-                gameViewModel.handleCheckAction()
+                gameViewModel.isRaiseSlider = false
+                gameViewModel.playerAction(PlayerState.CHECK.name, -1)
             },
             enabled = gameUiState.isCheckEnabled,
             shape = RectangleShape,
@@ -317,7 +373,8 @@ fun ActionButtons(
         }
         Button(
             onClick = {
-                gameViewModel.handleCallAction()
+                gameViewModel.isRaiseSlider = false
+                gameViewModel.playerAction(PlayerState.CALL.name, -1)
             },
             enabled = gameUiState.isCallEnabled,
             shape = RectangleShape,
@@ -345,7 +402,8 @@ fun ActionButtons(
         else{
             Button(
                 onClick = {
-                    gameViewModel.handleRaiseAction()
+                    gameViewModel.isRaiseSlider = false
+                    gameViewModel.playerAction(PlayerState.RAISE.name, gameViewModel.raiseAmount)
                 },
                 enabled = gameUiState.isRaiseEnabled,
                 shape = RectangleShape,
@@ -445,8 +503,17 @@ fun PlayerInformation(
     playerHandRank: HandRankings,
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
-    timerProgress: Float
+    gameViewModel: GameViewModel
 ) {
+
+    if(isActivePlayer){
+        gameViewModel.timerProgress = 1.0f
+
+        LaunchedEffect(key1 = gameViewModel.viewModelScope) {
+            gameViewModel.timerCountdown()
+        }
+    }
+
     Column (Modifier.padding(10.dp)){
         OutlinedCard(
             colors = CardDefaults.cardColors(
@@ -497,7 +564,7 @@ fun PlayerInformation(
 
                     if (isActivePlayer) {
                         val animatedProgress = animateFloatAsState(
-                            targetValue = timerProgress,
+                            targetValue = gameViewModel.timerProgress,
                             animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
                         ).value
 
@@ -549,7 +616,7 @@ fun CardHandPlayer(
     player: Player,
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
-    timerProgress: Float
+    gameViewModel: GameViewModel
 ){
 
     val holeCards = player.getHoleCardsLabels()
@@ -594,13 +661,13 @@ fun CardHandPlayer(
         modifier = infoModifier
     ){
         PlayerInformation(
-            player.user.username,
+            player.username,
             player.chipBuyInAmount,
             player.playerState,
             player.playerHandRank.first,
             dealerButtonPos,
             isActivePlayer,
-            timerProgress
+            gameViewModel
         )
     }
 
@@ -622,7 +689,7 @@ fun CardHandOpponent(
     isActivePlayer: Boolean,
     context: Context,
     round: GameRound,
-    timerProgress: Float
+    gameViewModel: GameViewModel
 ){
 
     if(round == GameRound.SHOWDOWN &&
@@ -695,13 +762,13 @@ fun CardHandOpponent(
         modifier = infoModifier
     ){
         PlayerInformation(
-            player.user.username,
+            player.username,
             player.chipBuyInAmount,
             player.playerState,
             player.playerHandRank.first,
             dealerButtonPos,
             isActivePlayer,
-            timerProgress
+            gameViewModel
         )
     }
 
@@ -714,7 +781,7 @@ fun CardHandOpponent(
 }
 
 @Composable
-fun CommunityCards(context: Context, gameUiState: GameUiState, modifier: Modifier) {
+fun CommunityCards(context: Context, gameUiState: GameState, modifier: Modifier) {
 
     val communityCardIds: MutableList<Int> = mutableListOf()
 

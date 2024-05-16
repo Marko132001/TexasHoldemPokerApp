@@ -4,8 +4,10 @@ import android.util.Log
 import com.example.projectapp.data.HandRankings
 import com.example.projectapp.data.PlayerState
 import com.example.projectapp.data.PlayingCard
+import kotlinx.serialization.Serializable
 
-class Player(val user: User, var chipBuyInAmount: Int) {
+@Serializable
+class Player(val username: String, var chipBuyInAmount: Int) {
 
     private lateinit var holeCards: Pair<PlayingCard, PlayingCard>
     var playerHandRank: Pair<HandRankings, Int> = Pair(HandRankings.HIGH_CARD, 7462)
@@ -37,7 +39,7 @@ class Player(val user: User, var chipBuyInAmount: Int) {
             chipBuyInAmount = 0
             playerBet += allInCall
 
-            Log.d("PLAYER", "${user.username} went ALL IN for ${allInCall} chips")
+            Log.d("PLAYER", "${username} went ALL IN for ${allInCall} chips")
 
             return allInCall
         }
@@ -46,7 +48,7 @@ class Player(val user: User, var chipBuyInAmount: Int) {
         playerBet += betDifference
         chipBuyInAmount -= betDifference
 
-        Log.d("PLAYER", "${user.username} CALLED for ${betDifference} chips")
+        Log.d("PLAYER", "${username} CALLED for ${betDifference} chips")
 
         return betDifference
     }
@@ -56,13 +58,13 @@ class Player(val user: User, var chipBuyInAmount: Int) {
         if(raiseAmount == chipBuyInAmount - betDifference) {
             playerState = PlayerState.ALL_IN
 
-            Log.d("PLAYER", "${user.username} went ALL IN for ${betDifference + raiseAmount} chips")
+            Log.d("PLAYER", "${username} went ALL IN for ${betDifference + raiseAmount} chips")
         }
         else {
             playerState = PlayerState.RAISE
 
             Log.d("PLAYER",
-                "${user.username} made a BET for ${betDifference + raiseAmount} chips")
+                "${username} made a BET for ${betDifference + raiseAmount} chips")
         }
 
         playerBet += (betDifference + raiseAmount)
@@ -74,20 +76,20 @@ class Player(val user: User, var chipBuyInAmount: Int) {
     fun check() {
         playerState = PlayerState.CHECK
 
-        Log.d("PLAYER", "${user.username} CHECKED")
+        Log.d("PLAYER", "${username} CHECKED")
     }
 
     fun fold() {
         playerState = PlayerState.FOLD
 
-        Log.d("PLAYER", "${user.username} FOLDED")
+        Log.d("PLAYER", "${username} FOLDED")
     }
 
     fun paySmallBlind(smallBlindValue: Int): Int {
         chipBuyInAmount -= smallBlindValue
         playerBet = smallBlindValue
 
-        Log.d("PLAYER", "${user.username} is SMALL BLIND")
+        Log.d("PLAYER", "${username} is SMALL BLIND")
 
         return smallBlindValue
     }
@@ -96,7 +98,7 @@ class Player(val user: User, var chipBuyInAmount: Int) {
         chipBuyInAmount -= bigBlindValue
         playerBet = bigBlindValue
 
-        Log.d("PLAYER", "${user.username} is BIG BLIND")
+        Log.d("PLAYER", "${username} is BIG BLIND")
 
         return bigBlindValue
     }
