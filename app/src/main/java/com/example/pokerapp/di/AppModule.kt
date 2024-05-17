@@ -1,7 +1,7 @@
-package com.example.projectapp.di
+package com.example.pokerapp.di
 
-import com.example.projectapp.model.KtorRealtimeMessagingClient
-import com.example.projectapp.model.RealtimeMessagingClient
+import com.example.pokerapp.model.KtorRealtimeMessagingClient
+import com.example.pokerapp.model.RealtimeMessagingClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

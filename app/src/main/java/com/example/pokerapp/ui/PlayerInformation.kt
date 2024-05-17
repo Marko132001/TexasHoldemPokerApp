@@ -1,4 +1,4 @@
-package com.example.projectapp.ui
+package com.example.pokerapp.ui
 
 import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
@@ -33,10 +33,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.projectapp.R
-import com.example.projectapp.data.GameRound
-import com.example.projectapp.data.PlayerState
-import com.example.projectapp.model.PlayerDataState
+import com.example.pokerapp.R
+import com.example.pokerapp.data.GameRound
+import com.example.pokerapp.data.PlayerState
+import com.example.pokerapp.model.PlayerDataState
 
 @Composable
 fun CardHandPlayer(

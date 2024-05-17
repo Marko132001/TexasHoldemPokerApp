@@ -1,4 +1,4 @@
-package com.example.projectapp.model
+package com.example.pokerapp.model
 
 import kotlinx.coroutines.flow.Flow
 

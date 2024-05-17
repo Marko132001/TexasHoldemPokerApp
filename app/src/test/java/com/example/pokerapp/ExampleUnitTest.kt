@@ -1,4 +1,4 @@
-package com.example.projectapp
+package com.example.pokerapp
 
 import org.junit.Test
 

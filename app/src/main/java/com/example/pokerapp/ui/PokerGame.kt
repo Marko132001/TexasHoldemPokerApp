@@ -1,4 +1,4 @@
-package com.example.projectapp.ui
+package com.example.pokerapp.ui
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -15,8 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.projectapp.data.GameRound
-import com.example.projectapp.model.GameState
+import com.example.pokerapp.data.GameRound
+import com.example.pokerapp.model.GameState
 
 @Composable
 fun PokerGame(

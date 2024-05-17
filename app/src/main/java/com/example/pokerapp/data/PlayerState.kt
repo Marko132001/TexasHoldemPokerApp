@@ -1,4 +1,4 @@
-package com.example.projectapp.data
+package com.example.pokerapp.data
 
 enum class PlayerState(val label: String) {
     CHECK("CHECK"),

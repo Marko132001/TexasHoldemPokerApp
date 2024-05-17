@@ -1,6 +1,5 @@
-package com.example.projectapp.model
+package com.example.pokerapp.model
 
-import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.url
@@ -13,7 +12,6 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

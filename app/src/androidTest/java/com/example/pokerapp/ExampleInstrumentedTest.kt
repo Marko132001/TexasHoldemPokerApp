@@ -1,4 +1,4 @@
-package com.example.projectapp
+package com.example.pokerapp
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

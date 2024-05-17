@@ -4,14 +4,15 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.projectapp"
+    namespace = "com.example.pokerapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.projectapp"
+        applicationId = "com.example.pokerapp"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -82,6 +83,11 @@ dependencies {
     implementation(libs.ktor.client.logging)
 
     implementation(libs.kotlinx.serialization.json)
+
+    //Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
 }
 

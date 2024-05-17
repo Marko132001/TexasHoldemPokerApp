@@ -1,4 +1,4 @@
-package com.example.projectapp
+package com.example.pokerapp
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -12,8 +12,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.projectapp.ui.GameViewModel
-import com.example.projectapp.ui.PokerGame
+import com.example.pokerapp.ui.GameViewModel
+import com.example.pokerapp.ui.PokerGame
 import dagger.hilt.android.AndroidEntryPoint
 
 

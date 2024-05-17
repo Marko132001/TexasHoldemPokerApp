@@ -1,6 +1,6 @@
-package com.example.projectapp.model
+package com.example.pokerapp.model
 
-import com.example.projectapp.data.PlayerState
+import com.example.pokerapp.data.PlayerState
 import kotlinx.serialization.Serializable
 
 @Serializable
