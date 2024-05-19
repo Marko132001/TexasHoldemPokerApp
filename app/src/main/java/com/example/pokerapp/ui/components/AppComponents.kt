@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.pokerapp.R
 import com.example.pokerapp.ui.theme.AccentColor
 import com.example.pokerapp.ui.theme.BgColor
 import com.example.pokerapp.ui.theme.Primary
@@ -81,17 +84,14 @@ fun HeadingTextComponent(value: String) {
 }
 
 @Composable
-fun MyTextFieldComponent(labelValue: String, icon: ImageVector) {
-    var textValue by remember {
-        mutableStateOf("")
-    }
+fun MyTextFieldComponent(labelValue: String, value: String, onNewValue: (String) -> Unit, icon: ImageVector) {
     OutlinedTextField(
         label = {
             Text(text = labelValue)
         },
-        value = textValue,
+        value = value,
         onValueChange = {
-            textValue = it
+            onNewValue(it)
         },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = AccentColor,
@@ -114,21 +114,26 @@ fun MyTextFieldComponent(labelValue: String, icon: ImageVector) {
 }
 
 @Composable
-fun PasswordTextFieldComponent(labelValue: String, icon: ImageVector) {
-    var password by remember {
-        mutableStateOf("")
-    }
+fun PasswordTextFieldComponent(labelValue: String, value: String, onNewValue: (String) -> Unit, icon: ImageVector) {
 
     var isPasswordVisible by remember {
         mutableStateOf(false)
     }
+
+    val visibilityIcon =
+        if(isPasswordVisible) painterResource(R.drawable.ic_visibility_on)
+        else painterResource(R.drawable.ic_visibility_off)
+
+    val visualTransformation =
+        if(isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+
     OutlinedTextField(
         label = {
             Text(text = labelValue)
         },
-        value = password,
+        value = value,
         onValueChange = {
-            password = it
+            onNewValue(it)
         },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = AccentColor,
@@ -146,8 +151,18 @@ fun PasswordTextFieldComponent(labelValue: String, icon: ImageVector) {
                 contentDescription = "profile"
             )
         },
+        trailingIcon = {
+            IconButton(onClick = {
+                isPasswordVisible = !isPasswordVisible
+            }) {
+                Icon(
+                    painter = visibilityIcon,
+                    contentDescription = "Visibility"
+                )
+            }
+        },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+        visualTransformation = visualTransformation
     )
 }
 
@@ -155,8 +170,9 @@ fun PasswordTextFieldComponent(labelValue: String, icon: ImageVector) {
 fun BottomComponent(
     textQuery: String,
     textClickable: String,
-    action: String,
-    navController: NavHostController
+    actionLabel: String,
+    action: () -> Unit,
+    changeAction: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -167,7 +183,7 @@ fun BottomComponent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = { /*TODO*/ },
+                onClick = action,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
@@ -181,11 +197,11 @@ fun BottomComponent(
                         .heightIn(48.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = action, color = Color.White, fontSize = 20.sp)
+                    Text(text = actionLabel, color = Color.White, fontSize = 20.sp)
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
-            AccountQueryComponent(textQuery, textClickable, navController)
+            AccountQueryComponent(textQuery, textClickable, changeAction)
         }
     }
 }
@@ -194,7 +210,7 @@ fun BottomComponent(
 fun AccountQueryComponent(
     textQuery: String,
     textClickable: String,
-    navController: NavHostController
+    changeAction: () -> Unit
 ) {
     val annonatedString = buildAnnotatedString {
         withStyle(style = SpanStyle(color = TextColor, fontSize = 15.sp)) {
@@ -206,14 +222,5 @@ fun AccountQueryComponent(
         }
     }
 
-    ClickableText(text = annonatedString, onClick = {
-        annonatedString.getStringAnnotations(it, it)
-            .firstOrNull()?.also { annonation ->
-                if (annonation.item == "Login") {
-                    navController.navigate("Login")
-                } else if (annonation.item == "Register") {
-                    navController.navigate("Signup")
-                }
-            }
-    })
+    ClickableText(text = annonatedString, onClick = { changeAction() })
 }
