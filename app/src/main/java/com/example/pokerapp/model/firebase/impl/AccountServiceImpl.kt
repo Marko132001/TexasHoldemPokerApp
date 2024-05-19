@@ -1,5 +1,6 @@
 package com.example.pokerapp.model.firebase.impl
 
+import android.util.Log
 import com.example.pokerapp.model.User
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
@@ -38,6 +39,7 @@ class AccountServiceImpl @Inject constructor(
     }
 
     override suspend fun createAccount(email: String, password: String, username: String) {
+        Log.d("FIREBASE", "Creating new user")
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){
@@ -52,6 +54,7 @@ class AccountServiceImpl @Inject constructor(
 
     private fun saveUserData(userId: String, username: String, avatarUrl: String?)
     {
+        Log.d("FIREBASE", "Saving user data")
         val userData = UserData(userId, username, DEFAULT_NUMBER_OF_CHIPS, avatarUrl)
         val userRef = firestore.collection("users").document(userId)
 

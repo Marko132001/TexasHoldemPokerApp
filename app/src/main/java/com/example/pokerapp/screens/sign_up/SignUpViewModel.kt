@@ -1,6 +1,8 @@
 package com.example.pokerapp.screens.sign_up
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import com.example.pokerapp.HOME_SCREEN
 import com.example.pokerapp.LOGIN_SCREEN
 import com.example.pokerapp.SIGN_UP_SCREEN
 import com.example.pokerapp.common.ext.isValidEmail
@@ -49,20 +51,24 @@ class SignUpViewModel @Inject constructor(
 
     fun onSignUpClick(openAndPopUp: (String, String) -> Unit) {
         if (!email.isValidEmail()) {
+            Log.d("SIGNUP", "VALIDATING EMAIL")
             return
         }
 
         if (!password.isValidPassword()) {
+            Log.d("SIGNUP", "VALIDATING PASSWORD")
             return
         }
 
         if (!password.passwordMatches(uiState.value.repeatPassword)) {
+            Log.d("SIGNUP", "VALIDATING REPEATED PASSWORD")
             return
         }
 
         launchCatching {
             accountService.createAccount(email, password, username)
-            openAndPopUp(LOGIN_SCREEN, SIGN_UP_SCREEN)
+            Log.d("SIGNUP", "REDIRECTING TO HOME PAGE")
+            openAndPopUp(HOME_SCREEN, SIGN_UP_SCREEN)
         }
     }
 }

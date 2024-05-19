@@ -1,6 +1,7 @@
 package com.example.pokerapp.screens.login
 
 import androidx.compose.runtime.mutableStateOf
+import com.example.pokerapp.HOME_SCREEN
 import com.example.pokerapp.LOGIN_SCREEN
 import com.example.pokerapp.SIGN_UP_SCREEN
 import com.example.pokerapp.common.ext.isValidEmail
@@ -46,7 +47,7 @@ class LoginViewModel @Inject constructor(
 
         launchCatching {
             accountService.authenticate(email, password)
-            openAndPopUp(SIGN_UP_SCREEN, LOGIN_SCREEN)
+            openAndPopUp(HOME_SCREEN, LOGIN_SCREEN)
         }
     }
 }

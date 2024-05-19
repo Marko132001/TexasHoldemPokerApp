@@ -7,9 +7,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.pokerapp.HOME_SCREEN
 import com.example.pokerapp.LOGIN_SCREEN
 import com.example.pokerapp.PokerAppState
 import com.example.pokerapp.SIGN_UP_SCREEN
+import com.example.pokerapp.screens.home.HomeScreen
 import com.example.pokerapp.screens.login.LoginScreen
 import com.example.pokerapp.screens.sign_up.SignupScreen
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +22,7 @@ fun Navigation() {
 
     NavHost(
         navController = appState.navController,
-        startDestination = SIGN_UP_SCREEN
+        startDestination = LOGIN_SCREEN
     ) {
         composable(route = LOGIN_SCREEN) {
             LoginScreen(openAndPopUp = {
@@ -29,6 +31,11 @@ fun Navigation() {
         }
         composable(route = SIGN_UP_SCREEN) {
             SignupScreen(openAndPopUp = {
+                route, popUp -> appState.navigateAndPopUp(route, popUp)
+            })
+        }
+        composable(route = HOME_SCREEN) {
+            HomeScreen(openAndPopUp = {
                 route, popUp -> appState.navigateAndPopUp(route, popUp)
             })
         }
