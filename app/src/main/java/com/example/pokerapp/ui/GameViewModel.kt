@@ -1,5 +1,6 @@
 package com.example.pokerapp.ui
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -10,6 +11,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.pokerapp.model.GameState
 import com.example.pokerapp.model.PlayerAction
 import com.example.pokerapp.model.RealtimeMessagingClient
+import com.example.pokerapp.model.UserData
+import com.example.pokerapp.model.firebase.AccountService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +28,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val client: RealtimeMessagingClient
+    private val client: RealtimeMessagingClient,
+    private val accountService: AccountService
 ): ViewModel() {
+
+    init {
+        Log.d("GAMEVIEWMODEL", "Sending client ID...")
+        viewModelScope.launch {
+            accountService.getCurrentUserData()?.let { clientUserData(it) }
+        }
+    }
 
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
@@ -49,6 +60,12 @@ class GameViewModel @Inject constructor(
     fun playerAction(playerState: String, raiseAmount: Int) {
         viewModelScope.launch {
             client.sendAction(PlayerAction(playerState, raiseAmount))
+        }
+    }
+
+    private fun clientUserData(clientUserData: UserData) {
+        viewModelScope.launch {
+            client.sendUserData(clientUserData)
         }
     }
 

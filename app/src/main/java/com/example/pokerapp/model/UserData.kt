@@ -1,5 +1,8 @@
 package com.example.pokerapp.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class UserData(
     val userId: String = "",
     val username: String = "",

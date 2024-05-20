@@ -6,9 +6,12 @@ import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.dataObjects
+import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -24,15 +27,10 @@ class AccountServiceImpl @Inject constructor(
     override val currentUserId: String
         get() = auth.currentUser?.uid.orEmpty()
 
-    override val currentUser: Flow<User>
-        get() = callbackFlow {
-            val listener =
-                FirebaseAuth.AuthStateListener { auth ->
-                    this.trySend(auth.currentUser?.let { User(it.uid) } ?: User())
-                }
-            auth.addAuthStateListener(listener)
-            awaitClose { auth.removeAuthStateListener(listener) }
-        }
+    override suspend fun getCurrentUserData(): UserData? =
+        firestore.collection("users")
+            .document(currentUserId).get().await().toObject<UserData>()
+
 
     override suspend fun authenticate(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password).await().user
@@ -66,6 +64,7 @@ class AccountServiceImpl @Inject constructor(
     }
 
     override suspend fun signOut() {
+        Log.d("FIREBASE", "Signing out")
         auth.signOut()
     }
 }
