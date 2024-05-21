@@ -39,6 +39,8 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    val clientUserId = accountService.currentUserId
+
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
 
@@ -63,10 +65,8 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    private fun clientUserData(clientUserData: UserData) {
-        viewModelScope.launch {
-            client.sendUserData(clientUserData)
-        }
+    private suspend fun clientUserData(clientUserData: UserData) {
+         client.sendUserData(clientUserData)
     }
 
     suspend fun timerCountdown() {

@@ -18,6 +18,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.model.GameState
+import com.example.pokerapp.model.PlayerDataState
 
 @Composable
 fun PokerGame(
@@ -53,6 +54,14 @@ fun PokerGame(
     }
 
     if(gameUiState.players.size > 1) {
+        //TODO: Fix client crash bug
+        var opponentPlayersPositions = gameUiState.playerSeatPositions
+            .filter { it != gameViewModel.clientUserId }.toTypedArray()
+
+        LaunchedEffect(key1 = gameUiState.playerSeatPositions) {
+            opponentPlayersPositions = gameUiState.playerSeatPositions
+                .filter { it != gameViewModel.clientUserId }.toTypedArray()
+        }
 
         LaunchedEffect(key1 = gameUiState.currentPlayerIndex, key2 = gameUiState.round) {
             gameViewModel.isRaiseSlider = false
@@ -96,31 +105,34 @@ fun PokerGame(
                 gameUiState.potAmount
             )
 
-            CardHandPlayer(
-                context,
-                modifier = Modifier.constrainAs(playerHand) {
-                    start.linkTo(actionButtons.start, margin = 10.dp)
-                    bottom.linkTo(parent.bottom, margin = 30.dp)
-                },
-                chipValueModifier = Modifier.constrainAs(playerChipValue) {
-                    end.linkTo(playerHand.start, margin = 10.dp)
-                    bottom.linkTo(playerHand.top)
-                },
-                infoModifier = Modifier.constrainAs(playerInfo) {
-                    end.linkTo(actionButtons.start)
-                    bottom.linkTo(parent.bottom)
-                },
-                player = gameUiState.players[0],
-                dealerButtonPos =
-                if (gameUiState.dealerButtonPos == 0)
-                    gameUiState.dealerButtonPos
-                else
-                    -1,
-                isActivePlayer =
-                gameUiState.currentPlayerIndex == 0 && gameUiState.round != GameRound.SHOWDOWN,
-                gameViewModel = gameViewModel
-            )
-            if (gameUiState.players.getOrNull(1) != null) {
+            gameUiState.players.find { it.userId == gameViewModel.clientUserId }?.let {
+                CardHandPlayer(
+                    context,
+                    modifier = Modifier.constrainAs(playerHand) {
+                        start.linkTo(actionButtons.start, margin = 10.dp)
+                        bottom.linkTo(parent.bottom, margin = 30.dp)
+                    },
+                    chipValueModifier = Modifier.constrainAs(playerChipValue) {
+                        end.linkTo(playerHand.start, margin = 10.dp)
+                        bottom.linkTo(playerHand.top)
+                    },
+                    infoModifier = Modifier.constrainAs(playerInfo) {
+                        end.linkTo(actionButtons.start)
+                        bottom.linkTo(parent.bottom)
+                    },
+                    player = it,
+                    dealerButtonPos =
+                        if (gameUiState.players[gameUiState.dealerButtonPos].userId == it.userId)
+                            gameUiState.dealerButtonPos
+                        else
+                            -1,
+                    isActivePlayer =
+                        gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
+                                && gameUiState.round != GameRound.SHOWDOWN,
+                    gameViewModel = gameViewModel
+                )
+            }
+            gameUiState.players.find { it.userId == opponentPlayersPositions[0] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand1) {
                         start.linkTo(parent.start, margin = 90.dp)
@@ -134,20 +146,21 @@ fun PokerGame(
                         start.linkTo(parent.start, margin = 5.dp)
                         bottom.linkTo(parent.bottom, margin = 50.dp)
                     },
-                    player = gameUiState.players[1],
+                    player = it,
                     dealerButtonPos =
-                    if (gameUiState.dealerButtonPos == 1)
-                        gameUiState.dealerButtonPos
-                    else
-                        -1,
+                        if (gameUiState.players[gameUiState.dealerButtonPos].userId == it.userId)
+                            gameUiState.dealerButtonPos
+                        else
+                            -1,
                     isActivePlayer =
-                    gameUiState.currentPlayerIndex == 1 && gameUiState.round != GameRound.SHOWDOWN,
+                        gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
+                                && gameUiState.round != GameRound.SHOWDOWN,
                     context = context,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
                 )
             }
-            if (gameUiState.players.getOrNull(2) != null) {
+            gameUiState.players.find { it.userId == opponentPlayersPositions[1] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand2) {
                         top.linkTo(parent.top, margin = 70.dp)
@@ -161,20 +174,21 @@ fun PokerGame(
                         start.linkTo(parent.start, margin = 5.dp)
                         top.linkTo(parent.top, margin = 5.dp)
                     },
-                    player = gameUiState.players[2],
+                    player = it,
                     dealerButtonPos =
-                    if (gameUiState.dealerButtonPos == 2)
-                        gameUiState.dealerButtonPos
-                    else
-                        -1,
+                        if (gameUiState.players[gameUiState.dealerButtonPos].userId == it.userId)
+                            gameUiState.dealerButtonPos
+                        else
+                            -1,
                     isActivePlayer =
-                    gameUiState.currentPlayerIndex == 2 && gameUiState.round != GameRound.SHOWDOWN,
+                        gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
+                                && gameUiState.round != GameRound.SHOWDOWN,
                     context = context,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
                 )
             }
-            if (gameUiState.players.getOrNull(3) != null) {
+            gameUiState.players.find { it.userId == opponentPlayersPositions[2] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand3) {
                         top.linkTo(parent.top, margin = 78.dp)
@@ -188,20 +202,21 @@ fun PokerGame(
                         end.linkTo(parent.end)
                         top.linkTo(parent.top)
                     },
-                    player = gameUiState.players[3],
+                    player = it,
                     dealerButtonPos =
-                    if (gameUiState.dealerButtonPos == 3)
-                        gameUiState.dealerButtonPos
-                    else
-                        -1,
+                        if (gameUiState.players[gameUiState.dealerButtonPos].userId == it.userId)
+                            gameUiState.dealerButtonPos
+                        else
+                            -1,
                     isActivePlayer =
-                    gameUiState.currentPlayerIndex == 3 && gameUiState.round != GameRound.SHOWDOWN,
+                        gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
+                                && gameUiState.round != GameRound.SHOWDOWN,
                     context = context,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
                 )
             }
-            if (gameUiState.players.getOrNull(4) != null) {
+            gameUiState.players.find { it.userId == opponentPlayersPositions[3] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand4) {
                         end.linkTo(parent.end, margin = 130.dp)
@@ -215,15 +230,16 @@ fun PokerGame(
                         end.linkTo(parent.end)
                         bottom.linkTo(parent.bottom, margin = 40.dp)
                     },
-                    player = gameUiState.players[4],
+                    player = it,
                     dealerButtonPos =
-                    if (gameUiState.dealerButtonPos == 4)
-                        gameUiState.dealerButtonPos
-                    else
-                        -1,
+                        if (gameUiState.players[gameUiState.dealerButtonPos].userId == it.userId)
+                            gameUiState.dealerButtonPos
+                        else
+                            -1,
                     context = context,
                     isActivePlayer =
-                    gameUiState.currentPlayerIndex == 4 && gameUiState.round != GameRound.SHOWDOWN,
+                        gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
+                                && gameUiState.round != GameRound.SHOWDOWN,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
                 )
@@ -234,8 +250,10 @@ fun PokerGame(
                     bottom.linkTo(parent.bottom)
                     end.linkTo(parent.end, margin = 3.dp)
                 },
-                gameViewModel,
-                gameUiState
+                gameViewModel = gameViewModel,
+                gameUiState = gameUiState,
+                clientActionTurn = gameUiState.players[gameUiState.currentPlayerIndex].userId
+                        == gameViewModel.clientUserId
             )
         }
 

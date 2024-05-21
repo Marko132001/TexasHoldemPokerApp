@@ -22,7 +22,8 @@ import com.example.pokerapp.model.GameState
 fun ActionButtons(
     actionButtons: Modifier,
     gameViewModel: GameViewModel,
-    gameUiState: GameState
+    gameUiState: GameState,
+    clientActionTurn: Boolean
 ) {
 
     Row(
@@ -31,7 +32,7 @@ fun ActionButtons(
     ){
         Button(
             onClick = {
-                if(gameViewModel.timerProgress > 0.01f) {
+                if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.FOLD.name, -1)
                 }
@@ -46,7 +47,7 @@ fun ActionButtons(
         }
         Button(
             onClick = {
-                if(gameViewModel.timerProgress > 0.01f) {
+                if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.CHECK.name, -1)
                 }
@@ -61,7 +62,7 @@ fun ActionButtons(
         }
         Button(
             onClick = {
-                if(gameViewModel.timerProgress > 0.01f) {
+                if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.CALL.name, -1)
                 }
@@ -77,7 +78,7 @@ fun ActionButtons(
         if(!gameViewModel.isRaiseSlider) {
             Button(
                 onClick = {
-                    if(gameViewModel.timerProgress > 0.01f) {
+                    if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                         gameViewModel.isRaiseSlider = true
                     }
                 },
@@ -94,7 +95,7 @@ fun ActionButtons(
         else{
             Button(
                 onClick = {
-                    if(gameViewModel.timerProgress > 0.01f) {
+                    if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                         gameViewModel.isRaiseSlider = false
                         gameViewModel.playerAction(
                             PlayerState.RAISE.name,
