@@ -14,6 +14,8 @@ import com.example.pokerapp.model.RealtimeMessagingClient
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -40,6 +42,7 @@ class GameViewModel @Inject constructor(
     }
 
     val clientUserId = accountService.currentUserId
+    var opponentPlayersPositions by mutableStateOf(arrayOfNulls<String?>(5))
 
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)

@@ -1,6 +1,8 @@
 package com.example.pokerapp.ui
 
+import android.app.Activity
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,6 +15,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,12 +58,9 @@ fun PokerGame(
     }
 
     if(gameUiState.players.size > 1) {
-        //TODO: Fix client crash bug
-        var opponentPlayersPositions = gameUiState.playerSeatPositions
-            .filter { it != gameViewModel.clientUserId }.toTypedArray()
 
         LaunchedEffect(key1 = gameUiState.playerSeatPositions) {
-            opponentPlayersPositions = gameUiState.playerSeatPositions
+            gameViewModel.opponentPlayersPositions = gameUiState.playerSeatPositions
                 .filter { it != gameViewModel.clientUserId }.toTypedArray()
         }
 
@@ -132,7 +133,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == opponentPlayersPositions[0] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[0] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand1) {
                         start.linkTo(parent.start, margin = 90.dp)
@@ -160,7 +161,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == opponentPlayersPositions[1] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[1] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand2) {
                         top.linkTo(parent.top, margin = 70.dp)
@@ -188,7 +189,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == opponentPlayersPositions[2] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[2] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand3) {
                         top.linkTo(parent.top, margin = 78.dp)
@@ -216,7 +217,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == opponentPlayersPositions[3] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[3] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand4) {
                         end.linkTo(parent.end, margin = 130.dp)

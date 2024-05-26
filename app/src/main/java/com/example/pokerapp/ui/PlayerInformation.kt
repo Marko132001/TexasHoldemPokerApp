@@ -1,5 +1,6 @@
 package com.example.pokerapp.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -37,6 +39,7 @@ import com.example.pokerapp.R
 import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.PlayerDataState
+import kotlinx.coroutines.launch
 
 @Composable
 fun CardHandPlayer(
@@ -212,6 +215,7 @@ fun CardHandOpponent(
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun PlayerInformation(
     username: String,
@@ -224,9 +228,10 @@ fun PlayerInformation(
 ) {
 
     if(isActivePlayer){
+        val scope = rememberCoroutineScope()
         gameViewModel.timerProgress = 1.0f
 
-        LaunchedEffect(key1 = username) {
+        scope.launch {
             gameViewModel.timerCountdown()
         }
     }
