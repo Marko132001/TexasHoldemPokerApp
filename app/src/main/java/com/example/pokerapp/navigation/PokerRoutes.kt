@@ -1,4 +1,4 @@
-package com.example.pokerapp
+package com.example.pokerapp.navigation
 
 const val LOGIN_SCREEN = "Login"
 const val SIGN_UP_SCREEN = "Signup"

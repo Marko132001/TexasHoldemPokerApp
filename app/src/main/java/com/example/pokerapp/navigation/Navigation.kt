@@ -1,4 +1,4 @@
-package com.example.pokerapp.screens
+package com.example.pokerapp.navigation
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -13,21 +13,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.pokerapp.GAME_SCREEN
-import com.example.pokerapp.GameActivity
-import com.example.pokerapp.HOME_SCREEN
-import com.example.pokerapp.LOGIN_SCREEN
-import com.example.pokerapp.PokerAppState
-import com.example.pokerapp.SIGN_UP_SCREEN
 import com.example.pokerapp.screens.home.HomeScreen
 import com.example.pokerapp.screens.login.LoginScreen
 import com.example.pokerapp.screens.sign_up.SignupScreen
-import com.example.pokerapp.ui.GameViewModel
-import com.example.pokerapp.ui.PokerGame
+import com.example.pokerapp.screens.game.GameViewModel
+import com.example.pokerapp.screens.game.PokerGame
 import kotlinx.coroutines.CoroutineScope
 
 @Composable

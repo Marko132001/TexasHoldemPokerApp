@@ -1,9 +1,10 @@
 package com.example.pokerapp.screens.home
 
 import android.util.Log
-import com.example.pokerapp.GAME_SCREEN
-import com.example.pokerapp.HOME_SCREEN
-import com.example.pokerapp.LOGIN_SCREEN
+import com.example.pokerapp.model.UserData
+import com.example.pokerapp.navigation.GAME_SCREEN
+import com.example.pokerapp.navigation.HOME_SCREEN
+import com.example.pokerapp.navigation.LOGIN_SCREEN
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +21,6 @@ class HomeScreenViewModel @Inject constructor(
         launchCatching {
             openAndPopUp(GAME_SCREEN, HOME_SCREEN)
         }
-        //TODO: Redirect to GameScreen and send userId to server
     }
 
     fun onLeaderboardsClick(openScreen: (String) -> Unit){

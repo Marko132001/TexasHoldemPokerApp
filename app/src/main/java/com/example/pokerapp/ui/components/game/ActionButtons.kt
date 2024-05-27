@@ -1,4 +1,4 @@
-package com.example.pokerapp.ui
+package com.example.pokerapp.ui.components.game
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.GameState
+import com.example.pokerapp.screens.game.GameViewModel
 
 @Composable
 fun ActionButtons(

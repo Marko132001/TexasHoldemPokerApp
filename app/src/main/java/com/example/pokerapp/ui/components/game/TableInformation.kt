@@ -1,4 +1,4 @@
-package com.example.pokerapp.ui
+package com.example.pokerapp.ui.components.game
 
 import android.content.Context
 import androidx.compose.foundation.Image

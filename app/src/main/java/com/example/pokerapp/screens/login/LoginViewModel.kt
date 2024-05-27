@@ -1,9 +1,9 @@
 package com.example.pokerapp.screens.login
 
 import androidx.compose.runtime.mutableStateOf
-import com.example.pokerapp.HOME_SCREEN
-import com.example.pokerapp.LOGIN_SCREEN
-import com.example.pokerapp.SIGN_UP_SCREEN
+import com.example.pokerapp.navigation.HOME_SCREEN
+import com.example.pokerapp.navigation.LOGIN_SCREEN
+import com.example.pokerapp.navigation.SIGN_UP_SCREEN
 import com.example.pokerapp.common.ext.isValidEmail
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel

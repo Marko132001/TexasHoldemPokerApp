@@ -1,4 +1,4 @@
-package com.example.pokerapp.ui
+package com.example.pokerapp.ui.components.game
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.pokerapp.screens.game.GameViewModel
 import kotlin.math.roundToInt
 
 @Composable

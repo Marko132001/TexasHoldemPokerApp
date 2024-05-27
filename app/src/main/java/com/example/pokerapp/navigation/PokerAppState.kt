@@ -1,4 +1,4 @@
-package com.example.pokerapp
+package com.example.pokerapp.navigation
 
 import androidx.compose.runtime.Stable
 import androidx.navigation.NavHostController

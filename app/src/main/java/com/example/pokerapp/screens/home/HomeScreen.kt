@@ -28,6 +28,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pokerapp.screens.login.LoginScreenContent
+import com.example.pokerapp.ui.components.game.PopUpDialog
 import com.example.pokerapp.ui.theme.AccentColor
 
 @Composable
@@ -64,6 +68,16 @@ fun HomeScreenContent(
     onSettingsClick: () -> Unit,
     onSignOutClick: () -> Unit
 ){
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    if(showDialog){
+        PopUpDialog(
+            onPlayClick,
+            onDismiss = { showDialog = false }
+        )
+    }
+
     Surface(
         color = Color(0xff1893b5),
         modifier = Modifier
@@ -104,7 +118,7 @@ fun HomeScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = { onPlayClick() },
+                onClick = { showDialog = true },
                 modifier = Modifier
                     .wrapContentSize()
                     .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))

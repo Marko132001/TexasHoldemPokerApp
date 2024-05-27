@@ -1,4 +1,4 @@
-package com.example.pokerapp.ui
+package com.example.pokerapp.ui.components.game
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -24,7 +24,6 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -39,6 +38,7 @@ import com.example.pokerapp.R
 import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.PlayerDataState
+import com.example.pokerapp.screens.game.GameViewModel
 import kotlinx.coroutines.launch
 
 @Composable

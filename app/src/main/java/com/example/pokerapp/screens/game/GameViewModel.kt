@@ -1,4 +1,4 @@
-package com.example.pokerapp.ui
+package com.example.pokerapp.screens.game
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -13,9 +13,8 @@ import com.example.pokerapp.model.PlayerAction
 import com.example.pokerapp.model.RealtimeMessagingClient
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
+import com.example.pokerapp.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,11 +31,11 @@ import javax.inject.Inject
 class GameViewModel @Inject constructor(
     private val client: RealtimeMessagingClient,
     private val accountService: AccountService
-): ViewModel() {
+): AppViewModel() {
 
     init {
         Log.d("GAMEVIEWMODEL", "Sending client ID...")
-        viewModelScope.launch {
+        launchCatching {
             accountService.getCurrentUserData()?.let { clientUserData(it) }
         }
     }
@@ -63,7 +62,7 @@ class GameViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), GameState())
 
     fun playerAction(playerState: String, raiseAmount: Int) {
-        viewModelScope.launch {
+        launchCatching {
             client.sendAction(PlayerAction(playerState, raiseAmount))
         }
     }
@@ -81,7 +80,7 @@ class GameViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        viewModelScope.launch {
+        launchCatching {
             client.close()
         }
     }

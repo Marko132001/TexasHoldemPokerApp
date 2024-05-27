@@ -6,6 +6,7 @@ import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.dataObjects
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.channels.awaitClose
@@ -21,7 +22,7 @@ class AccountServiceImpl @Inject constructor(
 ) : AccountService {
 
     companion object{
-        private val DEFAULT_NUMBER_OF_CHIPS: Int = 1000
+        private val DEFAULT_NUMBER_OF_CHIPS: Int = 30000
     }
 
     override val currentUserId: String
