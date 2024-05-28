@@ -4,17 +4,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,7 +18,6 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,27 +36,42 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pokerapp.screens.login.LoginScreenContent
 import com.example.pokerapp.ui.components.game.PopUpDialog
 import com.example.pokerapp.ui.theme.AccentColor
+import kotlin.math.floor
+import kotlin.math.pow
 
 @Composable
 fun HomeScreen(
     openAndPopUp: (String, String) -> Unit,
     openScreen: (String) -> Unit,
     restartApp: (String) -> Unit,
-    viewModel: HomeScreenViewModel = hiltViewModel()
+    homeViewModel: HomeScreenViewModel = hiltViewModel()
 ) {
 
+
+
     HomeScreenContent(
-        onPlayClick = { viewModel.onPlayClick(openAndPopUp) },
-        onLeaderboardsClick = { viewModel.onLeaderboardsClick(openScreen) },
-        onSettingsClick = { viewModel.onSettingsClick(openScreen) },
-        onSignOutClick = { viewModel.onSignOutClick(restartApp) }
+        minBuyIn = homeViewModel.minBuyIn,
+        maxBuyIn = homeViewModel.maxBuyIn,
+        userChips = homeViewModel.currentUser!!.chipAmount,
+        openAndPopUp = openAndPopUp,
+        onPlayClick = homeViewModel::onPlayClick,
+        onLeaderboardsClick = { homeViewModel.onLeaderboardsClick(openScreen) },
+        onSettingsClick = { homeViewModel.onSettingsClick(openScreen) },
+        onSignOutClick = { homeViewModel.onSignOutClick(restartApp) }
     )
+
+
+
 
 }
 
 @Composable
 fun HomeScreenContent(
-    onPlayClick: () -> Unit,
+    minBuyIn: Int,
+    maxBuyIn: Int,
+    userChips: Int,
+    openAndPopUp: (String, String) -> Unit,
+    onPlayClick: ((String, String) -> Unit, Int) -> Unit,
     onLeaderboardsClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onSignOutClick: () -> Unit
@@ -73,9 +81,14 @@ fun HomeScreenContent(
 
     if(showDialog){
         PopUpDialog(
-            onPlayClick,
-            onDismiss = { showDialog = false }
-        )
+            minBuyIn = minBuyIn,
+            maxBuyIn = maxBuyIn,
+            userChips = userChips,
+            openAndPopUp = openAndPopUp,
+            onPlayClick = onPlayClick
+        ) {
+            showDialog = false
+        }
     }
 
     Surface(
@@ -119,6 +132,7 @@ fun HomeScreenContent(
         ) {
             Button(
                 onClick = { showDialog = true },
+                enabled = userChips >= minBuyIn,
                 modifier = Modifier
                     .wrapContentSize()
                     .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))

@@ -2,6 +2,7 @@ package com.example.pokerapp.navigation
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -13,14 +14,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.pokerapp.screens.home.HomeScreen
 import com.example.pokerapp.screens.login.LoginScreen
 import com.example.pokerapp.screens.sign_up.SignupScreen
 import com.example.pokerapp.screens.game.GameViewModel
 import com.example.pokerapp.screens.game.PokerGame
+import com.example.pokerapp.screens.home.HomeScreenViewModel
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -48,8 +52,23 @@ fun Navigation() {
                 restartApp = { route -> appState.clearAndNavigate(route) }
             )
         }
-        composable(route = GAME_SCREEN) {
-            val gameViewModel: GameViewModel = hiltViewModel<GameViewModel>()
+        composable(
+            route = "$GAME_SCREEN/{buyInValue}",
+            arguments = listOf(
+                navArgument("buyInValue"){
+                    type = NavType.IntType
+                }
+            )
+        ) {
+
+            val buyInValue = it.arguments?.getInt("buyInValue") ?: 0
+            Log.d("GAMESCREEN", "Buy-in value: $buyInValue")
+
+            val gameViewModel: GameViewModel = hiltViewModel(
+                creationCallback = {factory: GameViewModel.DetailViewModelFactory ->
+                    factory.create(buyInValue)
+                }
+            )
 
             val context = LocalContext.current
             val activity = context as Activity

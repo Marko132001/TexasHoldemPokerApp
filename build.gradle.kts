@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.46.1")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.49")
         classpath("org.jetbrains.kotlin:kotlin-serialization:1.7.0")
     }
 }
@@ -13,6 +13,6 @@ buildscript {
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
-    id("com.google.dagger.hilt.android") version "2.46" apply false
+    id("com.google.dagger.hilt.android") version "2.49" apply false
     id("com.google.gms.google-services") version "4.4.1" apply false
 }

@@ -1,10 +1,10 @@
 package com.example.pokerapp.ui.components.game
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,19 +12,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.absolutePadding
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,16 +43,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.pokerapp.R
+import kotlin.math.floor
+import kotlin.math.pow
+import kotlin.math.round
 
 @Composable
 fun PopUpDialog(
-    onPlayClick: () -> Unit,
+    minBuyIn: Int,
+    maxBuyIn: Int,
+    userChips: Int,
+    openAndPopUp: (String, String) -> Unit,
+    onPlayClick: ((String, String) -> Unit, Int) -> Unit,
     onDismiss: () -> Unit
 ){
 
-    var sliderPosition by remember { mutableFloatStateOf(1000f) }
+    var sliderPosition by remember { mutableFloatStateOf(0f) }
+    var selectBuyInValue by remember { mutableFloatStateOf(minBuyIn.toFloat()) }
+
+    val sliderStep = 10f.pow(minBuyIn.toString().length - 2)
+    var maxBuyIn = maxBuyIn.toFloat()
+
+    if(userChips < maxBuyIn){
+        maxBuyIn = floor(userChips.toFloat()/sliderStep) * sliderStep
+    }
+
+    var steps = 0
+    var rangeSteps = 0
+    if(maxBuyIn > minBuyIn){
+        rangeSteps = ((maxBuyIn - minBuyIn.toFloat()) / sliderStep).toInt()
+        steps = rangeSteps - 1
+    }
+    Log.d("POPUPDIALOG", "MaxBuyIn: $maxBuyIn, MinBuyIn: $minBuyIn, Slider step: $sliderStep, Steps: $steps")
 
     Dialog(
         onDismissRequest = onDismiss
@@ -95,7 +112,7 @@ fun PopUpDialog(
                     modifier = Modifier
                         .background(color = Color.DarkGray, shape = RoundedCornerShape(45))
                         .padding(horizontal = 25.dp),
-                    text = "$" + sliderPosition.toInt().toString(),
+                    text = "$" + selectBuyInValue.toInt().toString(),
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
                     color = Color.White
@@ -103,14 +120,17 @@ fun PopUpDialog(
                 Slider(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     value = sliderPosition,
-                    onValueChange = { sliderPosition = it },
+                    onValueChange = {
+                        sliderPosition = it
+                        selectBuyInValue = minBuyIn + (round(it) * sliderStep)
+                    },
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.secondary,
                         activeTrackColor = MaterialTheme.colorScheme.secondary,
                         inactiveTrackColor = Color.DarkGray,
                     ),
-                    steps = 3,
-                    valueRange = 1000f..5000f
+                    steps = steps,
+                    valueRange = 0f..rangeSteps.toFloat()
                 )
                 Text(
                     text = "Blinds",
@@ -141,7 +161,7 @@ fun PopUpDialog(
                 .absoluteOffset(x = 130.dp, y = 170.dp)
         ){
             Button(
-                onClick = onPlayClick,
+                onClick = { onPlayClick(openAndPopUp, selectBuyInValue.toInt()) },
                 modifier = Modifier
                     .width(65.dp)
                     .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))
@@ -161,11 +181,14 @@ fun PopUpDialog(
     }
 }
 
-@Preview
-@Composable
-fun PopUpDialogPreview(){
-    PopUpDialog(
-        {},
-        {false}
-    )
-}
+//@Preview
+//@Composable
+//fun PopUpDialogPreview(){
+//    PopUpDialog(
+//        5000,
+//        8800,
+//        9100,
+//        {},
+//        {}
+//    ) { false }
+//}

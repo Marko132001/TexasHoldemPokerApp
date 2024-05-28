@@ -14,6 +14,9 @@ import com.example.pokerapp.model.RealtimeMessagingClient
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,16 +30,24 @@ import kotlinx.coroutines.launch
 import java.net.ConnectException
 import javax.inject.Inject
 
-@HiltViewModel
-class GameViewModel @Inject constructor(
+@HiltViewModel(assistedFactory = GameViewModel.DetailViewModelFactory::class)
+class GameViewModel @AssistedInject constructor(
+    @Assisted private val buyInValue: Int,
     private val client: RealtimeMessagingClient,
     private val accountService: AccountService
 ): AppViewModel() {
 
+    @AssistedFactory
+    interface DetailViewModelFactory {
+        fun create(buyInValue: Int): GameViewModel
+    }
+
     init {
-        Log.d("GAMEVIEWMODEL", "Sending client ID...")
+        Log.d("GAMEVIEWMODEL", "Sending client data...")
         launchCatching {
-            accountService.getCurrentUserData()?.let { clientUserData(it) }
+            accountService.getCurrentUserData()?.let {
+                clientUserData(UserData(it.userId, it.username, buyInValue))
+            }
         }
     }
 
