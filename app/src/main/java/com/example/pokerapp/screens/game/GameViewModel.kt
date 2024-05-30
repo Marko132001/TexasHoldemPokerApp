@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokerapp.model.GameState
 import com.example.pokerapp.model.PlayerAction
@@ -26,9 +25,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.net.ConnectException
-import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = GameViewModel.DetailViewModelFactory::class)
 class GameViewModel @AssistedInject constructor(
@@ -43,9 +40,8 @@ class GameViewModel @AssistedInject constructor(
     }
 
     init {
-        Log.d("GAMEVIEWMODEL", "Sending client data...")
         launchCatching {
-            accountService.getCurrentUserData()?.let {
+            accountService.currentUser.collect {
                 clientUserData(UserData(it.userId, it.username, buyInValue))
             }
         }
@@ -79,7 +75,8 @@ class GameViewModel @AssistedInject constructor(
     }
 
     private suspend fun clientUserData(clientUserData: UserData) {
-         client.sendUserData(clientUserData)
+        Log.d("GAMEVIEWMODEL", "${clientUserData.userId}, ${clientUserData.chipAmount}")
+        client.sendUserData(clientUserData)
     }
 
     suspend fun timerCountdown() {

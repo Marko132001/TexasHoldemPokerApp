@@ -2,7 +2,6 @@ package com.example.pokerapp.navigation
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -46,10 +45,16 @@ fun Navigation() {
             })
         }
         composable(route = HOME_SCREEN) {
+            val homeViewModel: HomeScreenViewModel = hiltViewModel<HomeScreenViewModel>()
+
+            val userData by homeViewModel.userData.collectAsStateWithLifecycle()
+
             HomeScreen(
+                userData = userData,
                 openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) },
                 openScreen = { route -> appState.navigate(route) },
-                restartApp = { route -> appState.clearAndNavigate(route) }
+                restartApp = { route -> appState.clearAndNavigate(route) },
+                homeViewModel = homeViewModel
             )
         }
         composable(
@@ -62,9 +67,8 @@ fun Navigation() {
         ) {
 
             val buyInValue = it.arguments?.getInt("buyInValue") ?: 0
-            Log.d("GAMESCREEN", "Buy-in value: $buyInValue")
 
-            val gameViewModel: GameViewModel = hiltViewModel(
+            val gameViewModel: GameViewModel = hiltViewModel<GameViewModel, GameViewModel.DetailViewModelFactory>(
                 creationCallback = {factory: GameViewModel.DetailViewModelFactory ->
                     factory.create(buyInValue)
                 }

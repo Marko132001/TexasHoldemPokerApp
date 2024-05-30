@@ -29,30 +29,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.pokerapp.screens.login.LoginScreenContent
+import com.example.pokerapp.model.UserData
 import com.example.pokerapp.ui.components.game.PopUpDialog
-import com.example.pokerapp.ui.theme.AccentColor
-import kotlin.math.floor
-import kotlin.math.pow
 
 @Composable
 fun HomeScreen(
+    userData: UserData,
     openAndPopUp: (String, String) -> Unit,
     openScreen: (String) -> Unit,
     restartApp: (String) -> Unit,
-    homeViewModel: HomeScreenViewModel = hiltViewModel()
+    homeViewModel: HomeScreenViewModel = hiltViewModel<HomeScreenViewModel>()
 ) {
-
-
 
     HomeScreenContent(
         minBuyIn = homeViewModel.minBuyIn,
         maxBuyIn = homeViewModel.maxBuyIn,
-        userChips = homeViewModel.currentUser!!.chipAmount,
+        userData = userData,
         openAndPopUp = openAndPopUp,
         onPlayClick = homeViewModel::onPlayClick,
         onLeaderboardsClick = { homeViewModel.onLeaderboardsClick(openScreen) },
@@ -60,16 +55,13 @@ fun HomeScreen(
         onSignOutClick = { homeViewModel.onSignOutClick(restartApp) }
     )
 
-
-
-
 }
 
 @Composable
 fun HomeScreenContent(
     minBuyIn: Int,
     maxBuyIn: Int,
-    userChips: Int,
+    userData: UserData,
     openAndPopUp: (String, String) -> Unit,
     onPlayClick: ((String, String) -> Unit, Int) -> Unit,
     onLeaderboardsClick: () -> Unit,
@@ -83,7 +75,7 @@ fun HomeScreenContent(
         PopUpDialog(
             minBuyIn = minBuyIn,
             maxBuyIn = maxBuyIn,
-            userChips = userChips,
+            userChips = userData.chipAmount,
             openAndPopUp = openAndPopUp,
             onPlayClick = onPlayClick
         ) {
@@ -132,7 +124,7 @@ fun HomeScreenContent(
         ) {
             Button(
                 onClick = { showDialog = true },
-                enabled = userChips >= minBuyIn,
+                enabled = userData.chipAmount >= minBuyIn,
                 modifier = Modifier
                     .wrapContentSize()
                     .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))
