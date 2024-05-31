@@ -2,18 +2,12 @@ package com.example.pokerapp.ui.components.game
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.GameState
@@ -21,81 +15,64 @@ import com.example.pokerapp.screens.game.GameViewModel
 
 @Composable
 fun ActionButtons(
-    actionButtons: Modifier,
+    actionButtonsModifier: Modifier,
     gameViewModel: GameViewModel,
     gameUiState: GameState,
     clientActionTurn: Boolean
 ) {
 
     Row(
-        modifier = actionButtons,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        modifier = actionButtonsModifier
+            .padding(bottom = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp)
     ){
-        Button(
-            onClick = {
+        ActionButton(
+            buttonText = "FOLD",
+            buttonEnabled = gameUiState.isFoldEnabled,
+            onButtonClick = {
                 if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.FOLD.name, -1)
                 }
-            },
-            enabled = gameUiState.isFoldEnabled,
-            shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.DarkGray
-            )
-        ) {
-            Text(text = "FOLD")
-        }
-        Button(
-            onClick = {
+            }
+        )
+        ActionButton(
+            buttonText = "CHECK",
+            buttonEnabled = gameUiState.isCheckEnabled,
+            onButtonClick = {
                 if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.CHECK.name, -1)
                 }
-            },
-            enabled = gameUiState.isCheckEnabled,
-            shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.DarkGray
-            )
-        ) {
-            Text(text = "CHECK")
-        }
-        Button(
-            onClick = {
+            }
+        )
+        ActionButton(
+            buttonText = "CALL",
+            buttonEnabled = gameUiState.isCallEnabled,
+            onButtonClick = {
                 if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.CALL.name, -1)
                 }
-            },
-            enabled = gameUiState.isCallEnabled,
-            shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.DarkGray
-            )
-        ) {
-            Text(text = "CALL")
-        }
+            }
+        )
+
         if(!gameViewModel.isRaiseSlider) {
-            Button(
-                onClick = {
+            ActionButton(
+                buttonText = "RAISE",
+                buttonEnabled = gameUiState.isRaiseEnabled,
+                onButtonClick = {
                     if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                         gameViewModel.isRaiseSlider = true
                     }
-                },
-                enabled = gameUiState.isRaiseEnabled,
-                shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.DarkGray
-                ),
-                contentPadding = PaddingValues(horizontal = 37.dp)
-            ) {
-                Text(text = "RAISE")
-            }
+                }
+            )
         }
         else{
-            Button(
-                onClick = {
+            ActionButton(
+                buttonText = "CONFIRM",
+                buttonEnabled = gameUiState.isRaiseEnabled,
+                onButtonClick = {
                     if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
                         gameViewModel.isRaiseSlider = false
                         gameViewModel.playerAction(
@@ -103,15 +80,8 @@ fun ActionButtons(
                             gameViewModel.raiseAmount
                         )
                     }
-                },
-                enabled = gameUiState.isRaiseEnabled,
-                shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.DarkGray
-                )
-            ) {
-                Text(text = "CONFIRM")
-            }
+                }
+            )
         }
     }
 }

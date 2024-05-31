@@ -1,11 +1,19 @@
 package com.example.pokerapp.screens.game
 
 import android.content.Context
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,6 +33,7 @@ import com.example.pokerapp.ui.components.game.ActionButtons
 import com.example.pokerapp.ui.components.game.CardHandOpponent
 import com.example.pokerapp.ui.components.game.CardHandPlayer
 import com.example.pokerapp.ui.components.game.CommunityCards
+import com.example.pokerapp.ui.components.game.ExitPopUpDialog
 import com.example.pokerapp.ui.components.game.PopUpDialog
 import com.example.pokerapp.ui.components.game.PotValue
 import com.example.pokerapp.ui.components.game.RaiseAmountSlider
@@ -65,6 +74,7 @@ fun PokerGame(
     }
 
     var showRebuyDialog by remember { mutableStateOf(false) }
+    var showExitDialog by remember { mutableStateOf(false) }
 
     if(gameUiState.players.size > 1) {
 
@@ -84,7 +94,7 @@ fun PokerGame(
         ) {
             val (communityCards, playerHand, opponentHand1,
                 opponentHand2, opponentHand3, opponentHand4,
-                actionButtons
+                actionButtons, exitButton
             ) = createRefs()
 
             val (
@@ -114,6 +124,26 @@ fun PokerGame(
                     .padding(top = 90.dp),
                 gameUiState.potAmount
             )
+
+            IconButton(
+                modifier = Modifier
+                    .constrainAs(exitButton) {
+                        end.linkTo(parent.end, margin = 10.dp)
+                        top.linkTo(parent.top, margin = 10.dp)
+                    }
+                    .background(color = Color(0xff4796d6), shape = RoundedCornerShape(10.dp))
+                    .border(BorderStroke(1.5.dp, Color.White), shape = RoundedCornerShape(10.dp)),
+                onClick = { showExitDialog = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ExitToApp,
+                    contentDescription = null,
+                    tint = Color(0xfffcf99d),
+                    modifier = Modifier
+                        .size(28.dp)
+
+                )
+            }
 
             gameUiState.players.find { it.userId == gameViewModel.clientUserId }?.let {
                 if(it.chipBuyInAmount == 0 && it.playerState == PlayerState.SPECTATOR)
@@ -212,7 +242,7 @@ fun PokerGame(
                         bottom.linkTo(opponentHand3.bottom)
                     },
                     infoModifier = Modifier.constrainAs(opponentInfo3) {
-                        end.linkTo(parent.end)
+                        end.linkTo(exitButton.start, margin = 20.dp)
                         top.linkTo(parent.top)
                     },
                     player = it,
@@ -233,7 +263,7 @@ fun PokerGame(
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand4) {
                         end.linkTo(parent.end, margin = 130.dp)
-                        bottom.linkTo(parent.bottom, margin = 130.dp)
+                        bottom.linkTo(parent.bottom, margin = 150.dp)
                     },
                     chipValueModifier = Modifier.constrainAs(opponentChipValue4) {
                         end.linkTo(opponentHand4.end)
@@ -241,7 +271,7 @@ fun PokerGame(
                     },
                     infoModifier = Modifier.constrainAs(opponentInfo4) {
                         end.linkTo(parent.end)
-                        bottom.linkTo(parent.bottom, margin = 40.dp)
+                        bottom.linkTo(parent.bottom, margin = 60.dp)
                     },
                     player = it,
                     dealerButtonPos =
@@ -259,14 +289,26 @@ fun PokerGame(
             }
 
             ActionButtons(
-                actionButtons = Modifier.constrainAs(actionButtons) {
+                actionButtonsModifier = Modifier.constrainAs(actionButtons) {
                     bottom.linkTo(parent.bottom)
-                    end.linkTo(parent.end, margin = 3.dp)
+                    end.linkTo(parent.end, margin = 15.dp)
                 },
                 gameViewModel = gameViewModel,
                 gameUiState = gameUiState,
                 clientActionTurn = gameUiState.players[gameUiState.currentPlayerIndex].userId
                         == gameViewModel.clientUserId
+            )
+        }
+
+        if(showExitDialog){
+            ExitPopUpDialog (
+                onQuitGameClick = {
+                    showExitDialog = false
+                    gameViewModel.onQuitGameClick(openAndPopUp)
+                },
+                onDismiss = {
+                    showExitDialog = false
+                }
             )
         }
 
