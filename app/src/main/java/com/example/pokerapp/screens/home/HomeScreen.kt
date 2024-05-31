@@ -32,17 +32,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.ui.components.game.PopUpDialog
 
 @Composable
 fun HomeScreen(
-    userData: UserData,
     openAndPopUp: (String, String) -> Unit,
     openScreen: (String) -> Unit,
     restartApp: (String) -> Unit,
     homeViewModel: HomeScreenViewModel = hiltViewModel<HomeScreenViewModel>()
 ) {
+
+    val userData by homeViewModel.userData.collectAsStateWithLifecycle()
 
     HomeScreenContent(
         minBuyIn = homeViewModel.minBuyIn,
@@ -77,7 +79,8 @@ fun HomeScreenContent(
             maxBuyIn = maxBuyIn,
             userChips = userData.chipAmount,
             openAndPopUp = openAndPopUp,
-            onPlayClick = onPlayClick
+            onPlayClick = onPlayClick,
+            dismissOnClick = true
         ) {
             showDialog = false
         }

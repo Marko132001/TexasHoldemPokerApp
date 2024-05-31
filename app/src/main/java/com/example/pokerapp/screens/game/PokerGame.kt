@@ -9,18 +9,23 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pokerapp.data.GameRound
+import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.GameState
 import com.example.pokerapp.ui.components.game.ActionButtons
 import com.example.pokerapp.ui.components.game.CardHandOpponent
 import com.example.pokerapp.ui.components.game.CardHandPlayer
 import com.example.pokerapp.ui.components.game.CommunityCards
+import com.example.pokerapp.ui.components.game.PopUpDialog
 import com.example.pokerapp.ui.components.game.PotValue
 import com.example.pokerapp.ui.components.game.RaiseAmountSlider
 import com.example.pokerapp.ui.components.game.TableBackground
@@ -28,7 +33,8 @@ import com.example.pokerapp.ui.components.game.TableBackground
 @Composable
 fun PokerGame(
     context: Context,
-    gameViewModel: GameViewModel = hiltViewModel<GameViewModel>(),
+    openAndPopUp: (String, String) -> Unit,
+    gameViewModel: GameViewModel,
     gameUiState: GameState,
     isConnecting: Boolean,
     showConnectionError: Boolean
@@ -57,6 +63,8 @@ fun PokerGame(
             CircularProgressIndicator()
         }
     }
+
+    var showRebuyDialog by remember { mutableStateOf(false) }
 
     if(gameUiState.players.size > 1) {
 
@@ -108,6 +116,9 @@ fun PokerGame(
             )
 
             gameUiState.players.find { it.userId == gameViewModel.clientUserId }?.let {
+                if(it.chipBuyInAmount == 0 && it.playerState == PlayerState.SPECTATOR)
+                    showRebuyDialog = true
+
                 CardHandPlayer(
                     context,
                     modifier = Modifier.constrainAs(playerHand) {
@@ -256,6 +267,21 @@ fun PokerGame(
                 gameUiState = gameUiState,
                 clientActionTurn = gameUiState.players[gameUiState.currentPlayerIndex].userId
                         == gameViewModel.clientUserId
+            )
+        }
+
+        if(showRebuyDialog){
+            PopUpDialog(
+                minBuyIn = gameViewModel.minBuyIn,
+                maxBuyIn = gameViewModel.maxBuyIn,
+                userChips = gameViewModel.clientUser.value.chipAmount,
+                openAndPopUp = openAndPopUp,
+                onPlayClick = gameViewModel::onPlayClick,
+                dismissOnClick = false,
+                onQuitGameClick = {
+                    showRebuyDialog = false
+                    gameViewModel.onQuitGameClick(openAndPopUp)
+                }
             )
         }
 

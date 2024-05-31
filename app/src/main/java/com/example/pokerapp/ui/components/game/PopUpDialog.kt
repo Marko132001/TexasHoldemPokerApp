@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.pokerapp.R
 import kotlin.math.floor
 import kotlin.math.pow
@@ -55,7 +57,8 @@ fun PopUpDialog(
     userChips: Int,
     openAndPopUp: (String, String) -> Unit,
     onPlayClick: ((String, String) -> Unit, Int) -> Unit,
-    onDismiss: () -> Unit
+    dismissOnClick: Boolean,
+    onQuitGameClick: () -> Unit
 ){
 
     var sliderPosition by remember { mutableFloatStateOf(0f) }
@@ -77,7 +80,11 @@ fun PopUpDialog(
     Log.d("POPUPDIALOG", "MaxBuyIn: $maxBuyIn, MinBuyIn: $minBuyIn, Slider step: $sliderStep, Steps: $steps")
 
     Dialog(
-        onDismissRequest = onDismiss
+        onDismissRequest = onQuitGameClick,
+        properties = DialogProperties(
+            dismissOnClickOutside = dismissOnClick,
+            dismissOnBackPress = dismissOnClick
+        )
     ) {
         Card(
             modifier = Modifier
@@ -156,39 +163,53 @@ fun PopUpDialog(
 
             }
         }
+
         Box (
             modifier = Modifier
-                .absoluteOffset(x = 130.dp, y = 170.dp)
-        ){
-            Button(
-                onClick = { onPlayClick(openAndPopUp, selectBuyInValue.toInt()) },
-                modifier = Modifier
-                    .width(65.dp)
-                    .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))
-                    .border(BorderStroke(1.dp, Color.White), RoundedCornerShape(50.dp)),
-                colors = ButtonDefaults.buttonColors(Color.Transparent),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    text = "PLAY",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    letterSpacing = 1.sp,
-                    fontWeight = FontWeight.ExtraBold
+                .absoluteOffset(
+                    x = if(!dismissOnClick) 80.dp else 130.dp,
+                    y = 170.dp
                 )
+        ){
+            Row {
+                Button(
+                    onClick = { onPlayClick(openAndPopUp, selectBuyInValue.toInt()) },
+                    modifier = Modifier
+                        .width(65.dp)
+                        .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))
+                        .border(BorderStroke(1.dp, Color.White), RoundedCornerShape(50.dp)),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        text = "PLAY",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+                if(!dismissOnClick){
+                    Spacer(modifier = Modifier.width(33.dp))
+                    Button(
+                        onClick = { onQuitGameClick() },
+                        modifier = Modifier
+                            .width(65.dp)
+                            .background(color = Color.Red, shape = RoundedCornerShape(50.dp))
+                            .border(BorderStroke(1.dp, Color.White), RoundedCornerShape(50.dp)),
+                        colors = ButtonDefaults.buttonColors(Color.Transparent),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(
+                            text = "EXIT",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            letterSpacing = 1.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                }
             }
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun PopUpDialogPreview(){
-//    PopUpDialog(
-//        5000,
-//        8800,
-//        9100,
-//        {},
-//        {}
-//    ) { false }
-//}

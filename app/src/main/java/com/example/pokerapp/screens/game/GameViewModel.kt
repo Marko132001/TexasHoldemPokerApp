@@ -12,6 +12,9 @@ import com.example.pokerapp.model.PlayerAction
 import com.example.pokerapp.model.RealtimeMessagingClient
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
+import com.example.pokerapp.navigation.GAME_SCREEN
+import com.example.pokerapp.navigation.GAME_SCREEN_PARAMS
+import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.screens.AppViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -42,13 +45,18 @@ class GameViewModel @AssistedInject constructor(
     init {
         launchCatching {
             accountService.currentUser.collect {
+                clientUser.value = it
                 clientUserData(UserData(it.userId, it.username, buyInValue))
             }
         }
     }
 
+    val clientUser = mutableStateOf(UserData())
     val clientUserId = accountService.currentUserId
     var opponentPlayersPositions by mutableStateOf(arrayOfNulls<String?>(5))
+
+    val minBuyIn = 1000
+    val maxBuyIn = 5000
 
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
@@ -67,6 +75,18 @@ class GameViewModel @AssistedInject constructor(
         .onEach { _isConnecting.value = false }
         .catch { t -> _showConnectionError.value = t is ConnectException }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), GameState())
+
+    fun onPlayClick(openAndPopUp: (String, String) -> Unit, buyInValue: Int) {
+        //TODO: Send buy-in data to server
+//        launchCatching {
+//            client.sendBuyInValue(buyInValue)
+//        }
+    }
+
+    fun onQuitGameClick(openAndPopUp: (String, String) -> Unit) {
+        onCleared()
+        openAndPopUp(HOME_SCREEN, GAME_SCREEN_PARAMS)
+    }
 
     fun playerAction(playerState: String, raiseAmount: Int) {
         launchCatching {
@@ -88,6 +108,12 @@ class GameViewModel @AssistedInject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        state.value.players.find { it.userId == clientUserId }?.let {
+            val chipsWon = it.chipBuyInAmount - buyInValue
+            Log.d("GAMEVIEWMODEL", "${clientUser.value.username} quit the game. " +
+                    "Chips won: $chipsWon")
+            //TODO: Update total chips in firestore, handle closing session
+        }
         launchCatching {
             client.close()
         }

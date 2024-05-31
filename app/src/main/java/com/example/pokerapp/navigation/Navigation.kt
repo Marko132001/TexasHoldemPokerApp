@@ -45,20 +45,14 @@ fun Navigation() {
             })
         }
         composable(route = HOME_SCREEN) {
-            val homeViewModel: HomeScreenViewModel = hiltViewModel<HomeScreenViewModel>()
-
-            val userData by homeViewModel.userData.collectAsStateWithLifecycle()
-
             HomeScreen(
-                userData = userData,
                 openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) },
                 openScreen = { route -> appState.navigate(route) },
-                restartApp = { route -> appState.clearAndNavigate(route) },
-                homeViewModel = homeViewModel
+                restartApp = { route -> appState.clearAndNavigate(route) }
             )
         }
         composable(
-            route = "$GAME_SCREEN/{buyInValue}",
+            route = GAME_SCREEN_PARAMS,
             arguments = listOf(
                 navArgument("buyInValue"){
                     type = NavType.IntType
@@ -68,7 +62,7 @@ fun Navigation() {
 
             val buyInValue = it.arguments?.getInt("buyInValue") ?: 0
 
-            val gameViewModel: GameViewModel = hiltViewModel<GameViewModel, GameViewModel.DetailViewModelFactory>(
+            val gameViewModel: GameViewModel = hiltViewModel(
                 creationCallback = {factory: GameViewModel.DetailViewModelFactory ->
                     factory.create(buyInValue)
                 }
@@ -87,11 +81,12 @@ fun Navigation() {
                 modifier = Modifier.fillMaxSize()
             ) {
                 PokerGame(
-                    context,
-                    gameViewModel,
-                    gameUiState,
-                    isConnecting,
-                    showConnectionError
+                    context = context,
+                    openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) },
+                    gameViewModel = gameViewModel,
+                    gameUiState = gameUiState,
+                    isConnecting = isConnecting,
+                    showConnectionError = showConnectionError
                 )
             }
         }
