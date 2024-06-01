@@ -5,7 +5,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -57,8 +55,9 @@ fun PopUpDialog(
     userChips: Int,
     openAndPopUp: (String, String) -> Unit,
     onPlayClick: ((String, String) -> Unit, Int) -> Unit,
-    dismissOnClick: Boolean,
-    onQuitGameClick: () -> Unit
+    userDismissEnabled: Boolean,
+    onQuitGameClick: ((String, String) -> Unit) -> Unit,
+    onDismissClick: () -> Unit
 ){
 
     var sliderPosition by remember { mutableFloatStateOf(0f) }
@@ -80,10 +79,10 @@ fun PopUpDialog(
     Log.d("POPUPDIALOG", "MaxBuyIn: $maxBuyIn, MinBuyIn: $minBuyIn, Slider step: $sliderStep, Steps: $steps")
 
     Dialog(
-        onDismissRequest = onQuitGameClick,
+        onDismissRequest = { onDismissClick() },
         properties = DialogProperties(
-            dismissOnClickOutside = dismissOnClick,
-            dismissOnBackPress = dismissOnClick
+            dismissOnClickOutside = userDismissEnabled,
+            dismissOnBackPress = userDismissEnabled
         )
     ) {
         Card(
@@ -167,13 +166,16 @@ fun PopUpDialog(
         Box (
             modifier = Modifier
                 .absoluteOffset(
-                    x = if(!dismissOnClick) 80.dp else 130.dp,
+                    x = if(!userDismissEnabled) 80.dp else 130.dp,
                     y = 170.dp
                 )
         ){
             Row {
                 Button(
-                    onClick = { onPlayClick(openAndPopUp, selectBuyInValue.toInt()) },
+                    onClick = {
+                        onDismissClick()
+                        onPlayClick(openAndPopUp, selectBuyInValue.toInt())
+                    },
                     modifier = Modifier
                         .width(65.dp)
                         .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))
@@ -189,10 +191,13 @@ fun PopUpDialog(
                         fontWeight = FontWeight.ExtraBold
                     )
                 }
-                if(!dismissOnClick){
+                if(!userDismissEnabled){
                     Spacer(modifier = Modifier.width(33.dp))
                     Button(
-                        onClick = { onQuitGameClick() },
+                        onClick = {
+                            onDismissClick()
+                            onQuitGameClick(openAndPopUp)
+                        },
                         modifier = Modifier
                             .width(65.dp)
                             .background(color = Color.Red, shape = RoundedCornerShape(50.dp))

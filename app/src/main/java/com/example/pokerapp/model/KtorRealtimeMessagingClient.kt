@@ -56,7 +56,12 @@ class KtorRealtimeMessagingClient(
                 break
             }
         }
+    }
 
+    override suspend fun sendRebuyData(userData: UserData) {
+        session?.outgoing?.send(
+            Frame.Text("user_rebuy#${Json.encodeToString(userData)}")
+        )
     }
 
     override suspend fun close() {

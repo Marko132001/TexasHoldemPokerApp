@@ -80,10 +80,10 @@ fun HomeScreenContent(
             userChips = userData.chipAmount,
             openAndPopUp = openAndPopUp,
             onPlayClick = onPlayClick,
-            dismissOnClick = true
-        ) {
-            showDialog = false
-        }
+            userDismissEnabled = true,
+            onQuitGameClick = {},
+            onDismissClick = { showDialog = false }
+        )
     }
 
     Surface(

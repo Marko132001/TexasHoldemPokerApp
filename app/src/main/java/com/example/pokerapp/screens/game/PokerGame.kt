@@ -87,6 +87,31 @@ fun PokerGame(
             gameViewModel.isRaiseSlider = false
         }
 
+        if(showExitDialog){
+            ExitPopUpDialog (
+                onQuitGameClick = {
+                    showExitDialog = false
+                    gameViewModel.onQuitGameClick(openAndPopUp)
+                },
+                onDismiss = {
+                    showExitDialog = false
+                }
+            )
+        }
+
+        if(showRebuyDialog){
+            PopUpDialog(
+                minBuyIn = gameViewModel.minBuyIn,
+                maxBuyIn = gameViewModel.maxBuyIn,
+                userChips = gameViewModel.clientUser.value.chipAmount,
+                openAndPopUp = openAndPopUp,
+                onPlayClick = gameViewModel::onPlayClick,
+                userDismissEnabled = false,
+                onQuitGameClick = gameViewModel::onQuitGameClick,
+                onDismissClick = { showRebuyDialog = false }
+            )
+        }
+
         TableBackground()
 
         ConstraintLayout(
@@ -146,8 +171,12 @@ fun PokerGame(
             }
 
             gameUiState.players.find { it.userId == gameViewModel.clientUserId }?.let {
-                if(it.chipBuyInAmount == 0 && it.playerState == PlayerState.SPECTATOR)
+                if(it.chipBuyInAmount == 0 && it.playerState == PlayerState.SPECTATOR
+                    && !gameViewModel.isOnPlayClicked)
                     showRebuyDialog = true
+                else if(it.chipBuyInAmount > 0 && gameViewModel.isOnPlayClicked) {
+                    gameViewModel.isOnPlayClicked = false
+                }
 
                 CardHandPlayer(
                     context,
@@ -297,33 +326,6 @@ fun PokerGame(
                 gameUiState = gameUiState,
                 clientActionTurn = gameUiState.players[gameUiState.currentPlayerIndex].userId
                         == gameViewModel.clientUserId
-            )
-        }
-
-        if(showExitDialog){
-            ExitPopUpDialog (
-                onQuitGameClick = {
-                    showExitDialog = false
-                    gameViewModel.onQuitGameClick(openAndPopUp)
-                },
-                onDismiss = {
-                    showExitDialog = false
-                }
-            )
-        }
-
-        if(showRebuyDialog){
-            PopUpDialog(
-                minBuyIn = gameViewModel.minBuyIn,
-                maxBuyIn = gameViewModel.maxBuyIn,
-                userChips = gameViewModel.clientUser.value.chipAmount,
-                openAndPopUp = openAndPopUp,
-                onPlayClick = gameViewModel::onPlayClick,
-                dismissOnClick = false,
-                onQuitGameClick = {
-                    showRebuyDialog = false
-                    gameViewModel.onQuitGameClick(openAndPopUp)
-                }
             )
         }
 

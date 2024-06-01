@@ -12,7 +12,6 @@ import com.example.pokerapp.model.PlayerAction
 import com.example.pokerapp.model.RealtimeMessagingClient
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
-import com.example.pokerapp.navigation.GAME_SCREEN
 import com.example.pokerapp.navigation.GAME_SCREEN_PARAMS
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.screens.AppViewModel
@@ -69,6 +68,8 @@ class GameViewModel @AssistedInject constructor(
     private val _showConnectionError = MutableStateFlow(false)
     val showConnectionError = _showConnectionError.asStateFlow()
 
+    var isOnPlayClicked by mutableStateOf(false)
+
     val state = client
         .getGameStateStream()
         .onStart { _isConnecting.value = true }
@@ -77,10 +78,13 @@ class GameViewModel @AssistedInject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), GameState())
 
     fun onPlayClick(openAndPopUp: (String, String) -> Unit, buyInValue: Int) {
+        isOnPlayClicked = true
         //TODO: Send buy-in data to server
-//        launchCatching {
-//            client.sendBuyInValue(buyInValue)
-//        }
+        launchCatching {
+            client.sendRebuyData(
+                UserData(clientUser.value.userId, clientUser.value.username, buyInValue)
+            )
+        }
     }
 
     fun onQuitGameClick(openAndPopUp: (String, String) -> Unit) {
