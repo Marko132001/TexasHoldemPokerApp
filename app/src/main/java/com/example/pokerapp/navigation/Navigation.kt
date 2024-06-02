@@ -9,7 +9,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -24,6 +30,7 @@ import com.example.pokerapp.screens.sign_up.SignupScreen
 import com.example.pokerapp.screens.game.GameViewModel
 import com.example.pokerapp.screens.game.PokerGame
 import com.example.pokerapp.screens.home.HomeScreenViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -32,27 +39,32 @@ fun Navigation() {
     val context = LocalContext.current
     val activity = context as Activity
 
+    val view = LocalView.current
+    val window = (view.context as Activity).window
+
+    val insetsController = WindowCompat.getInsetsController(window, view)
+
     NavHost(
         navController = appState.navController,
-        startDestination = LOGIN_SCREEN
+        startDestination = if(FirebaseAuth.getInstance().currentUser == null) LOGIN_SCREEN else HOME_SCREEN
     ) {
         composable(route = LOGIN_SCREEN) {
-
+            window.statusBarColor = Color.White.toArgb()
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             LoginScreen(openAndPopUp = {
                 route, popUp -> appState.navigateAndPopUp(route, popUp)
             })
         }
         composable(route = SIGN_UP_SCREEN) {
-
+            window.statusBarColor = Color.White.toArgb()
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             SignupScreen(openAndPopUp = {
                 route, popUp -> appState.navigateAndPopUp(route, popUp)
             })
         }
         composable(route = HOME_SCREEN) {
-
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            window.statusBarColor = Color(0xff1893b5).toArgb()
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             HomeScreen(
                 openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) },
                 openScreen = { route -> appState.navigate(route) },
@@ -77,6 +89,10 @@ fun Navigation() {
             )
 
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            insetsController.apply {
+                hide(WindowInsetsCompat.Type.systemBars())
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
 
             val gameUiState by gameViewModel.state.collectAsStateWithLifecycle()
 

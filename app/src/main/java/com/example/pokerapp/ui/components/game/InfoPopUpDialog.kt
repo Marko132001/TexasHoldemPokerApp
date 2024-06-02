@@ -35,7 +35,8 @@ import androidx.compose.ui.window.DialogProperties
 fun InfoPopUpDialog(
     titleText: String,
     descriptionText: String,
-    onQuitGameClick: () -> Unit,
+    buttonAction: () -> Unit,
+    buttonText: String,
     isDismissable: Boolean,
     onDismiss: () -> Unit
 ){
@@ -79,7 +80,7 @@ fun InfoPopUpDialog(
                     modifier = Modifier
                         .fillMaxSize()
                         .wrapContentSize(Alignment.Center)
-                        .padding(horizontal = 75.dp),
+                        .padding(horizontal = 65.dp),
                     textAlign = TextAlign.Center,
                     color = Color.Black,
                     fontWeight = FontWeight.ExtraBold
@@ -93,16 +94,16 @@ fun InfoPopUpDialog(
         ) {
             Row {
                 Button(
-                    onClick = { onQuitGameClick() },
+                    onClick = { buttonAction() },
                     modifier = Modifier
-                        .width(65.dp)
+                        .width(75.dp)
                         .background(color = Color(0xffe03140), shape = RoundedCornerShape(50.dp))
                         .border(BorderStroke(1.dp, Color.White), RoundedCornerShape(50.dp)),
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     Text(
-                        text = "EXIT",
+                        text = buttonText,
                         color = Color.White,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,

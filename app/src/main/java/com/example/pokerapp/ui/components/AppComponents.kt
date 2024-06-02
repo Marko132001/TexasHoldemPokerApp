@@ -34,6 +34,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -83,7 +84,13 @@ fun HeadingTextComponent(value: String) {
 }
 
 @Composable
-fun MyTextFieldComponent(labelValue: String, value: String, onNewValue: (String) -> Unit, icon: ImageVector) {
+fun TextFieldComponent(
+    labelValue: String,
+    value: String,
+    onNewValue: (String) -> Unit,
+    icon: ImageVector,
+    imeAction: ImeAction
+) {
     OutlinedTextField(
         label = {
             Text(text = labelValue)
@@ -108,12 +115,18 @@ fun MyTextFieldComponent(labelValue: String, value: String, onNewValue: (String)
                 contentDescription = "profile"
             )
         },
-        keyboardOptions = KeyboardOptions.Default
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction)
     )
 }
 
 @Composable
-fun PasswordTextFieldComponent(labelValue: String, value: String, onNewValue: (String) -> Unit, icon: ImageVector) {
+fun PasswordTextFieldComponent(
+    labelValue: String,
+    value: String,
+    onNewValue: (String) -> Unit,
+    icon: ImageVector,
+    imeAction: ImeAction
+) {
 
     var isPasswordVisible by remember {
         mutableStateOf(false)
@@ -160,7 +173,7 @@ fun PasswordTextFieldComponent(labelValue: String, value: String, onNewValue: (S
                 )
             }
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction),
         visualTransformation = visualTransformation
     )
 }

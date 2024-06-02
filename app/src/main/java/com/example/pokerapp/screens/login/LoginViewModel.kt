@@ -1,5 +1,6 @@
 package com.example.pokerapp.screens.login
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.navigation.LOGIN_SCREEN
@@ -7,6 +8,7 @@ import com.example.pokerapp.navigation.SIGN_UP_SCREEN
 import com.example.pokerapp.common.ext.isValidEmail
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
+import com.google.firebase.auth.FirebaseAuthException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -38,16 +40,24 @@ class LoginViewModel @Inject constructor(
 
     fun onLogInClick(openAndPopUp: (String, String) -> Unit) {
         if(!email.isValidEmail()) {
+            //TODO: Show toast message
             return
         }
 
         if(password.isBlank()){
+            //TODO: Show toast message
             return
         }
 
         launchCatching {
-            accountService.authenticate(email, password)
-            openAndPopUp(HOME_SCREEN, LOGIN_SCREEN)
+            try {
+                accountService.authenticate(email, password)
+                openAndPopUp(HOME_SCREEN, LOGIN_SCREEN)
+            } catch (e: FirebaseAuthException){
+                //TODO: Show toast message
+                Log.d("LOGINVIEWMODEL", "Invalid login credentials.")
+                return@launchCatching
+            }
         }
     }
 }

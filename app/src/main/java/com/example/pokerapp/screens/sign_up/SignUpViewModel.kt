@@ -51,23 +51,19 @@ class SignUpViewModel @Inject constructor(
 
     fun onSignUpClick(openAndPopUp: (String, String) -> Unit) {
         if (!email.isValidEmail()) {
-            Log.d("SIGNUP", "VALIDATING EMAIL")
             return
         }
 
         if (!password.isValidPassword()) {
-            Log.d("SIGNUP", "VALIDATING PASSWORD")
             return
         }
 
         if (!password.passwordMatches(uiState.value.repeatPassword)) {
-            Log.d("SIGNUP", "VALIDATING REPEATED PASSWORD")
             return
         }
 
         launchCatching {
             accountService.createAccount(email, password, username)
-            Log.d("SIGNUP", "REDIRECTING TO HOME PAGE")
             openAndPopUp(HOME_SCREEN, SIGN_UP_SCREEN)
         }
     }

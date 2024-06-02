@@ -14,11 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pokerapp.ui.components.BottomComponent
 import com.example.pokerapp.ui.components.HeadingTextComponent
-import com.example.pokerapp.ui.components.MyTextFieldComponent
+import com.example.pokerapp.ui.components.TextFieldComponent
 import com.example.pokerapp.ui.components.NormalTextComponent
 import com.example.pokerapp.ui.components.PasswordTextFieldComponent
 
@@ -62,9 +63,9 @@ fun LoginScreenContent(
             }
             Spacer(modifier = Modifier.height(25.dp))
             Column {
-                MyTextFieldComponent("Email", uiState.email, onEmailChange, Icons.Outlined.Email)
+                TextFieldComponent("Email", uiState.email, onEmailChange, Icons.Outlined.Email, imeAction = ImeAction.Next)
                 Spacer(modifier = Modifier.height(10.dp))
-                PasswordTextFieldComponent("Password", uiState.password, onPasswordChange, Icons.Outlined.Lock)
+                PasswordTextFieldComponent("Password", uiState.password, onPasswordChange, Icons.Outlined.Lock, imeAction = ImeAction.Done)
             }
             BottomComponent(
                 textQuery = "Don't have an account? ",

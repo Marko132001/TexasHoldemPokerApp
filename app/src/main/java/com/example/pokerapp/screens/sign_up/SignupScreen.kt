@@ -15,11 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pokerapp.ui.components.BottomComponent
 import com.example.pokerapp.ui.components.HeadingTextComponent
-import com.example.pokerapp.ui.components.MyTextFieldComponent
+import com.example.pokerapp.ui.components.TextFieldComponent
 import com.example.pokerapp.ui.components.NormalTextComponent
 import com.example.pokerapp.ui.components.PasswordTextFieldComponent
 
@@ -67,32 +68,36 @@ fun SignUpScreenContent(
             Spacer(modifier = Modifier.height(25.dp))
 
             Column {
-                MyTextFieldComponent(
+                TextFieldComponent(
                     "Username",
                     uiState.username,
                     onUsernameChange,
-                    Icons.Outlined.Person
+                    Icons.Outlined.Person,
+                    imeAction = ImeAction.Next
                 )
                 Spacer(modifier = Modifier.height(10.dp))
-                MyTextFieldComponent(
+                TextFieldComponent(
                     labelValue = "Email",
                     uiState.email,
                     onEmailChange,
-                    icon = Icons.Outlined.Email
+                    icon = Icons.Outlined.Email,
+                    imeAction = ImeAction.Next
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 PasswordTextFieldComponent(
                     labelValue = "Password",
                     uiState.password,
                     onPasswordChange,
-                    icon = Icons.Outlined.Lock
+                    icon = Icons.Outlined.Lock,
+                    imeAction = ImeAction.Next
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 PasswordTextFieldComponent(
                     labelValue = "Repeat Password",
                     uiState.repeatPassword,
                     onRepeatPasswordChange,
-                    icon = Icons.Outlined.Lock
+                    icon = Icons.Outlined.Lock,
+                    imeAction = ImeAction.Done
                 )
                 BottomComponent(
                     textQuery = "Already have an account? ",

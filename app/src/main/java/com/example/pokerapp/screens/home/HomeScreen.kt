@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.ui.components.game.BuyInPopUpDialog
+import com.example.pokerapp.ui.components.game.InfoPopUpDialog
 
 @Composable
 fun HomeScreen(
@@ -72,6 +73,23 @@ fun HomeScreenContent(
 ){
 
     var showDialog by remember { mutableStateOf(false) }
+    var showSignOutDialog by remember { mutableStateOf(false) }
+
+    if(showSignOutDialog){
+        InfoPopUpDialog (
+            titleText = "Sign Out",
+            descriptionText = "Are you sure you want to sign out?",
+            buttonAction = {
+                showSignOutDialog = false
+                onSignOutClick()
+            },
+            buttonText = "SIGN OUT",
+            isDismissable = true,
+            onDismiss = {
+                showSignOutDialog = false
+            }
+        )
+    }
 
     if(showDialog){
         BuyInPopUpDialog(
@@ -90,7 +108,6 @@ fun HomeScreenContent(
         color = Color(0xff1893b5),
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
     ) {
         Row (
             modifier = Modifier
@@ -98,7 +115,7 @@ fun HomeScreenContent(
             horizontalArrangement = Arrangement.End
         ){
             Button(
-                onClick = { onSignOutClick() },
+                onClick = { showSignOutDialog = true },
                 modifier = Modifier
                     .wrapContentSize()
                     .background(color = Color.Red, shape = RoundedCornerShape(10.dp))
@@ -113,7 +130,7 @@ fun HomeScreenContent(
                 Text(
                     text = "SIGN OUT",
                     color = Color.White,
-                    fontSize = 18.sp,
+                    fontSize = 15.sp,
                     letterSpacing = 1.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -152,7 +169,7 @@ fun HomeScreenContent(
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
                 Text(
-                    text = "LEADERBOARDS",
+                    text = "LEADERBOARD",
                     color = Color.White,
                     fontSize = 20.sp,
                     letterSpacing = 1.sp,

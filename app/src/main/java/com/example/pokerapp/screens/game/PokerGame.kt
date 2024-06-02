@@ -54,10 +54,11 @@ fun PokerGame(
     if(showConnectionError){
         InfoPopUpDialog (
             titleText = "Connection Failed",
-            descriptionText = "Couldn't connect to the server, exit and try again later.",
-            onQuitGameClick = {
+            descriptionText = "Couldn't connect to the server, try again later.",
+            buttonAction = {
                 gameViewModel.onQuitGameClick(openAndPopUp)
             },
+            buttonText = "QUIT",
             isDismissable = false,
             onDismiss = {}
         )
@@ -85,12 +86,13 @@ fun PokerGame(
 
     if(showExitDialog){
         InfoPopUpDialog (
-            titleText = "Exit Game",
-            descriptionText = "Are you sure you want to exit the game?",
-            onQuitGameClick = {
+            titleText = "Quit Game",
+            descriptionText = "Are you sure you want to exit the lobby?",
+            buttonAction = {
                 showExitDialog = false
                 gameViewModel.onQuitGameClick(openAndPopUp)
             },
+            buttonText = "QUIT",
             isDismissable = true,
             onDismiss = {
                 showExitDialog = false
@@ -360,9 +362,10 @@ fun PokerGame(
             InfoPopUpDialog (
                 titleText = "Waiting for players",
                 descriptionText = "Please wait for more players to join...",
-                onQuitGameClick = {
+                buttonAction = {
                     gameViewModel.onQuitGameClick(openAndPopUp)
                 },
+                buttonText = "QUIT",
                 isDismissable = false,
                 onDismiss = {}
             )
