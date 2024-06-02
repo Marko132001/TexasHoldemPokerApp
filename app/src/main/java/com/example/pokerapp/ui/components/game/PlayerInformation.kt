@@ -24,6 +24,10 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -39,6 +43,7 @@ import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.PlayerDataState
 import com.example.pokerapp.screens.game.GameViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -215,7 +220,6 @@ fun CardHandOpponent(
 }
 
 
-@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun PlayerInformation(
     username: String,
@@ -227,13 +231,8 @@ fun PlayerInformation(
     gameViewModel: GameViewModel
 ) {
 
-    if(isActivePlayer){
-        val scope = rememberCoroutineScope()
-        gameViewModel.timerProgress = 1.0f
-
-        scope.launch {
-            gameViewModel.timerCountdown()
-        }
+    LaunchedEffect(key1 = isActivePlayer) {
+        gameViewModel.timerCountdown()
     }
 
     Column (Modifier.padding(10.dp)){
@@ -285,13 +284,8 @@ fun PlayerInformation(
                     }
 
                     if (isActivePlayer) {
-                        val animatedProgress = animateFloatAsState(
-                            targetValue = gameViewModel.timerProgress,
-                            animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
-                        ).value
-
                         LinearProgressIndicator(
-                            progress = animatedProgress,
+                            progress = gameViewModel.timerProgress,
                             modifier = Modifier
                                 .fillMaxSize(),
                             color = Color.Yellow.copy(alpha = 0.2F),

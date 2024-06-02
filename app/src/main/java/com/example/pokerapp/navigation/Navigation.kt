@@ -29,22 +29,30 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun Navigation() {
     val appState = rememberAppState()
+    val context = LocalContext.current
+    val activity = context as Activity
 
     NavHost(
         navController = appState.navController,
         startDestination = LOGIN_SCREEN
     ) {
         composable(route = LOGIN_SCREEN) {
+
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             LoginScreen(openAndPopUp = {
                 route, popUp -> appState.navigateAndPopUp(route, popUp)
             })
         }
         composable(route = SIGN_UP_SCREEN) {
+
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             SignupScreen(openAndPopUp = {
                 route, popUp -> appState.navigateAndPopUp(route, popUp)
             })
         }
         composable(route = HOME_SCREEN) {
+
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             HomeScreen(
                 openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) },
                 openScreen = { route -> appState.navigate(route) },
@@ -68,8 +76,6 @@ fun Navigation() {
                 }
             )
 
-            val context = LocalContext.current
-            val activity = context as Activity
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
             val gameUiState by gameViewModel.state.collectAsStateWithLifecycle()

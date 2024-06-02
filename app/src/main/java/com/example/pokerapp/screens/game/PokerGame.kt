@@ -1,6 +1,7 @@
 package com.example.pokerapp.screens.game
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,7 +15,6 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,11 +30,11 @@ import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.GameState
 import com.example.pokerapp.ui.components.game.ActionButtons
+import com.example.pokerapp.ui.components.game.BuyInPopUpDialog
 import com.example.pokerapp.ui.components.game.CardHandOpponent
 import com.example.pokerapp.ui.components.game.CardHandPlayer
 import com.example.pokerapp.ui.components.game.CommunityCards
-import com.example.pokerapp.ui.components.game.ExitPopUpDialog
-import com.example.pokerapp.ui.components.game.PopUpDialog
+import com.example.pokerapp.ui.components.game.InfoPopUpDialog
 import com.example.pokerapp.ui.components.game.PotValue
 import com.example.pokerapp.ui.components.game.RaiseAmountSlider
 import com.example.pokerapp.ui.components.game.TableBackground
@@ -49,34 +49,56 @@ fun PokerGame(
     showConnectionError: Boolean
 ){
 
-    if(showConnectionError) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Couldn't connect to the server",
-                color = Color.Red
-            )
-        }
+    TableBackground()
 
+    if(showConnectionError){
+        InfoPopUpDialog (
+            titleText = "Connection Failed",
+            descriptionText = "Couldn't connect to the server, exit and try again later.",
+            onQuitGameClick = {
+                gameViewModel.onQuitGameClick(openAndPopUp)
+            },
+            isDismissable = false,
+            onDismiss = {}
+        )
     }
-
-    if(isConnecting) {
+    else if(isConnecting) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
+                .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
         }
     }
 
-    var showRebuyDialog by remember { mutableStateOf(false) }
+
     var showExitDialog by remember { mutableStateOf(false) }
 
-    if(gameUiState.players.size > 1) {
+    BackHandler(
+        enabled = true,
+        onBack = {
+            if(!showExitDialog)
+                showExitDialog = true
+        }
+    )
+
+    if(showExitDialog){
+        InfoPopUpDialog (
+            titleText = "Exit Game",
+            descriptionText = "Are you sure you want to exit the game?",
+            onQuitGameClick = {
+                showExitDialog = false
+                gameViewModel.onQuitGameClick(openAndPopUp)
+            },
+            isDismissable = true,
+            onDismiss = {
+                showExitDialog = false
+            }
+        )
+    }
+
+    if(gameUiState.players.isNotEmpty()) {
 
         LaunchedEffect(key1 = gameUiState.playerSeatPositions) {
             gameViewModel.opponentPlayersPositions = gameUiState.playerSeatPositions
@@ -87,20 +109,10 @@ fun PokerGame(
             gameViewModel.isRaiseSlider = false
         }
 
-        if(showExitDialog){
-            ExitPopUpDialog (
-                onQuitGameClick = {
-                    showExitDialog = false
-                    gameViewModel.onQuitGameClick(openAndPopUp)
-                },
-                onDismiss = {
-                    showExitDialog = false
-                }
-            )
-        }
+        var showRebuyDialog by remember { mutableStateOf(false) }
 
         if(showRebuyDialog){
-            PopUpDialog(
+            BuyInPopUpDialog(
                 minBuyIn = gameViewModel.minBuyIn,
                 maxBuyIn = gameViewModel.maxBuyIn,
                 userChips = gameViewModel.clientUser.value.chipAmount,
@@ -112,7 +124,6 @@ fun PokerGame(
             )
         }
 
-        TableBackground()
 
         ConstraintLayout(
             modifier = Modifier.fillMaxSize()
@@ -200,7 +211,8 @@ fun PokerGame(
                             -1,
                     isActivePlayer =
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
-                                && gameUiState.round != GameRound.SHOWDOWN,
+                                && gameUiState.round != GameRound.SHOWDOWN
+                                && gameUiState.isEnoughPlayers,
                     gameViewModel = gameViewModel
                 )
             }
@@ -226,7 +238,8 @@ fun PokerGame(
                             -1,
                     isActivePlayer =
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
-                                && gameUiState.round != GameRound.SHOWDOWN,
+                                && gameUiState.round != GameRound.SHOWDOWN
+                                && gameUiState.isEnoughPlayers,
                     context = context,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
@@ -254,7 +267,8 @@ fun PokerGame(
                             -1,
                     isActivePlayer =
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
-                                && gameUiState.round != GameRound.SHOWDOWN,
+                                && gameUiState.round != GameRound.SHOWDOWN
+                                && gameUiState.isEnoughPlayers,
                     context = context,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
@@ -282,7 +296,8 @@ fun PokerGame(
                             -1,
                     isActivePlayer =
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
-                                && gameUiState.round != GameRound.SHOWDOWN,
+                                && gameUiState.round != GameRound.SHOWDOWN
+                                && gameUiState.isEnoughPlayers,
                     context = context,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
@@ -311,7 +326,8 @@ fun PokerGame(
                     context = context,
                     isActivePlayer =
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
-                                && gameUiState.round != GameRound.SHOWDOWN,
+                                && gameUiState.round != GameRound.SHOWDOWN
+                                && gameUiState.isEnoughPlayers,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
                 )
@@ -325,7 +341,7 @@ fun PokerGame(
                 gameViewModel = gameViewModel,
                 gameUiState = gameUiState,
                 clientActionTurn = gameUiState.players[gameUiState.currentPlayerIndex].userId
-                        == gameViewModel.clientUserId
+                        == gameViewModel.clientUserId && gameUiState.players.size > 1
             )
         }
 
@@ -339,15 +355,16 @@ fun PokerGame(
                 gameViewModel = gameViewModel
             )
         }
-    }
-    else{
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Waiting for more players...",
-                color = Color.Red
+
+        if(!gameUiState.isEnoughPlayers && !showRebuyDialog){
+            InfoPopUpDialog (
+                titleText = "Waiting for players",
+                descriptionText = "Please wait for more players to join...",
+                onQuitGameClick = {
+                    gameViewModel.onQuitGameClick(openAndPopUp)
+                },
+                isDismissable = false,
+                onDismiss = {}
             )
         }
     }

@@ -49,7 +49,7 @@ import kotlin.math.pow
 import kotlin.math.round
 
 @Composable
-fun PopUpDialog(
+fun BuyInPopUpDialog(
     minBuyIn: Int,
     maxBuyIn: Int,
     userChips: Int,

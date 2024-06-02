@@ -60,7 +60,7 @@ class GameViewModel @AssistedInject constructor(
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
 
-    var timerProgress by mutableFloatStateOf(1.0f)
+    var timerProgress by mutableFloatStateOf(0.0f)
 
     private val _isConnecting = MutableStateFlow(false)
     val isConnecting = _isConnecting.asStateFlow()
@@ -79,7 +79,6 @@ class GameViewModel @AssistedInject constructor(
 
     fun onPlayClick(openAndPopUp: (String, String) -> Unit, buyInValue: Int) {
         isOnPlayClicked = true
-        //TODO: Send buy-in data to server
         launchCatching {
             client.sendRebuyData(
                 UserData(clientUser.value.userId, clientUser.value.username, buyInValue)
@@ -116,7 +115,7 @@ class GameViewModel @AssistedInject constructor(
             val chipsWon = it.chipBuyInAmount - buyInValue
             Log.d("GAMEVIEWMODEL", "${clientUser.value.username} quit the game. " +
                     "Chips won: $chipsWon")
-            //TODO: Update total chips in firestore, handle closing session
+            //TODO: Update total chips in firestore
         }
         launchCatching {
             client.close()

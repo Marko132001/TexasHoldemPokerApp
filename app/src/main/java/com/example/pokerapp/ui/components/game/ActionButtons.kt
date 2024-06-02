@@ -30,7 +30,7 @@ fun ActionButtons(
             buttonText = "FOLD",
             buttonEnabled = gameUiState.isFoldEnabled,
             onButtonClick = {
-                if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
+                if(clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.FOLD.name, -1)
                 }
@@ -40,7 +40,7 @@ fun ActionButtons(
             buttonText = "CHECK",
             buttonEnabled = gameUiState.isCheckEnabled,
             onButtonClick = {
-                if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
+                if(clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.CHECK.name, -1)
                 }
@@ -50,7 +50,7 @@ fun ActionButtons(
             buttonText = "CALL",
             buttonEnabled = gameUiState.isCallEnabled,
             onButtonClick = {
-                if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
+                if(clientActionTurn) {
                     gameViewModel.isRaiseSlider = false
                     gameViewModel.playerAction(PlayerState.CALL.name, -1)
                 }
@@ -62,7 +62,7 @@ fun ActionButtons(
                 buttonText = "RAISE",
                 buttonEnabled = gameUiState.isRaiseEnabled,
                 onButtonClick = {
-                    if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
+                    if(clientActionTurn) {
                         gameViewModel.isRaiseSlider = true
                     }
                 }
@@ -73,7 +73,7 @@ fun ActionButtons(
                 buttonText = "CONFIRM",
                 buttonEnabled = gameUiState.isRaiseEnabled,
                 onButtonClick = {
-                    if(gameViewModel.timerProgress > 0.01f && clientActionTurn) {
+                    if(clientActionTurn) {
                         gameViewModel.isRaiseSlider = false
                         gameViewModel.playerAction(
                             PlayerState.RAISE.name,

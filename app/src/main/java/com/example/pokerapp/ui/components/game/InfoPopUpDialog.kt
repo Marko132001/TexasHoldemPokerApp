@@ -26,22 +26,24 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 @Composable
-fun ExitPopUpDialog(
+fun InfoPopUpDialog(
+    titleText: String,
+    descriptionText: String,
     onQuitGameClick: () -> Unit,
+    isDismissable: Boolean,
     onDismiss: () -> Unit
 ){
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
-            dismissOnClickOutside = true,
-            dismissOnBackPress = true
+            dismissOnClickOutside = isDismissable,
+            dismissOnBackPress = isDismissable
         )
     ) {
         Card(
@@ -63,7 +65,7 @@ fun ExitPopUpDialog(
                         .shadow(1.dp),
                 ) {
                     Text(
-                        text = "Exit Game",
+                        text = titleText,
                         modifier = Modifier
                             .fillMaxSize()
                             .wrapContentSize(Alignment.Center),
@@ -73,7 +75,7 @@ fun ExitPopUpDialog(
                     )
                 }
                 Text(
-                    text = "Are you sure you want to exit the game?",
+                    text = descriptionText,
                     modifier = Modifier
                         .fillMaxSize()
                         .wrapContentSize(Alignment.Center)
@@ -111,10 +113,4 @@ fun ExitPopUpDialog(
         }
 
     }
-}
-
-@Preview
-@Composable
-fun ExitPopUpPreview(){
-    ExitPopUpDialog({}, {})
 }

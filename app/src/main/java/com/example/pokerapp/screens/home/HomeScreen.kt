@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pokerapp.model.UserData
-import com.example.pokerapp.ui.components.game.PopUpDialog
+import com.example.pokerapp.ui.components.game.BuyInPopUpDialog
 
 @Composable
 fun HomeScreen(
@@ -74,7 +74,7 @@ fun HomeScreenContent(
     var showDialog by remember { mutableStateOf(false) }
 
     if(showDialog){
-        PopUpDialog(
+        BuyInPopUpDialog(
             minBuyIn = minBuyIn,
             maxBuyIn = maxBuyIn,
             userChips = userData.chipAmount,
