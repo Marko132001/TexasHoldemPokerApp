@@ -51,16 +51,22 @@ fun Navigation() {
         composable(route = LOGIN_SCREEN) {
             window.statusBarColor = Color.White.toArgb()
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            LoginScreen(openAndPopUp = {
-                route, popUp -> appState.navigateAndPopUp(route, popUp)
-            })
+            LoginScreen(
+                context = context,
+                openAndPopUp = {
+                    route, popUp -> appState.navigateAndPopUp(route, popUp)
+                }
+            )
         }
         composable(route = SIGN_UP_SCREEN) {
             window.statusBarColor = Color.White.toArgb()
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            SignupScreen(openAndPopUp = {
-                route, popUp -> appState.navigateAndPopUp(route, popUp)
-            })
+            SignupScreen(
+                context = context,
+                openAndPopUp = {
+                    route, popUp -> appState.navigateAndPopUp(route, popUp)
+                }
+            )
         }
         composable(route = HOME_SCREEN) {
             window.statusBarColor = Color(0xff1893b5).toArgb()

@@ -1,7 +1,10 @@
 package com.example.pokerapp.screens.login
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.navigation.LOGIN_SCREEN
 import com.example.pokerapp.navigation.SIGN_UP_SCREEN
@@ -40,12 +43,12 @@ class LoginViewModel @Inject constructor(
 
     fun onLogInClick(openAndPopUp: (String, String) -> Unit) {
         if(!email.isValidEmail()) {
-            //TODO: Show toast message
+            _errorMessage.value = "Please insert a valid email."
             return
         }
 
         if(password.isBlank()){
-            //TODO: Show toast message
+            _errorMessage.value = "Password cannot be empty."
             return
         }
 
@@ -53,9 +56,8 @@ class LoginViewModel @Inject constructor(
             try {
                 accountService.authenticate(email, password)
                 openAndPopUp(HOME_SCREEN, LOGIN_SCREEN)
-            } catch (e: FirebaseAuthException){
-                //TODO: Show toast message
-                Log.d("LOGINVIEWMODEL", "Invalid login credentials.")
+            } catch (e: FirebaseAuthException) {
+                _errorMessage.value = "Invalid login credentials."
                 return@launchCatching
             }
         }

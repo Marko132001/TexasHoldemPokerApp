@@ -10,7 +10,11 @@ import com.example.pokerapp.common.ext.isValidPassword
 import com.example.pokerapp.common.ext.passwordMatches
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.firestore.FirebaseFirestoreException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,20 +55,37 @@ class SignUpViewModel @Inject constructor(
 
     fun onSignUpClick(openAndPopUp: (String, String) -> Unit) {
         if (!email.isValidEmail()) {
+            _errorMessage.value = "Please insert a valid email."
             return
         }
 
         if (!password.isValidPassword()) {
+            _errorMessage.value = "Your password should have at least six digits."
             return
         }
 
         if (!password.passwordMatches(uiState.value.repeatPassword)) {
+            _errorMessage.value = "Passwords do not match."
             return
         }
 
         launchCatching {
-            accountService.createAccount(email, password, username)
-            openAndPopUp(HOME_SCREEN, SIGN_UP_SCREEN)
+            try {
+                accountService.createAccount(email, password, username)
+                openAndPopUp(HOME_SCREEN, SIGN_UP_SCREEN)
+            }
+            catch (e: FirebaseAuthException) {
+                _errorMessage.value = e.message
+                return@launchCatching
+            }
+            catch (e: FirebaseFirestoreException){
+                _errorMessage.value = e.message
+                return@launchCatching
+            }
+            catch (e: IllegalArgumentException){
+                _errorMessage.value = e.message
+                return@launchCatching
+            }
         }
     }
 }

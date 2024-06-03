@@ -1,5 +1,7 @@
 package com.example.pokerapp.screens.login
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +13,7 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,12 +28,17 @@ import com.example.pokerapp.ui.components.PasswordTextFieldComponent
 
 @Composable
 fun LoginScreen(
+    context: Context,
     openAndPopUp: (String, String) -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState
 
-    LoginScreenContent(uiState = uiState,
+    LoginScreenContent(
+        context = context,
+        errorMessage = viewModel.errorMessage.value,
+        clearErrorMessage = viewModel::clearErrorMessage,
+        uiState = uiState,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
         onLogInClick = { viewModel.onLogInClick(openAndPopUp) },
@@ -40,6 +48,9 @@ fun LoginScreen(
 
 @Composable
 fun LoginScreenContent(
+    context: Context,
+    errorMessage: String?,
+    clearErrorMessage: () -> Unit,
     uiState: LoginUiState,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -54,6 +65,12 @@ fun LoginScreenContent(
             .background(Color.White)
             .padding(28.dp)
     ) {
+        LaunchedEffect(key1 = errorMessage) {
+            errorMessage?.let{
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                clearErrorMessage()
+            }
+        }
         Column(
             modifier = Modifier.fillMaxSize()
         ) {

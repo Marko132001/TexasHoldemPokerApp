@@ -1,5 +1,7 @@
 package com.example.pokerapp.screens.sign_up
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,12 +29,16 @@ import com.example.pokerapp.ui.components.PasswordTextFieldComponent
 
 @Composable
 fun SignupScreen(
+    context: Context,
     openAndPopUp: (String, String) -> Unit,
     viewModel: SignUpViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState
 
     SignUpScreenContent(
+        context = context,
+        errorMessage = viewModel.errorMessage.value,
+        clearErrorMessage = viewModel::clearErrorMessage,
         uiState = uiState,
         onUsernameChange = viewModel::onUsernameChange,
         onEmailChange = viewModel::onEmailChange,
@@ -45,6 +52,9 @@ fun SignupScreen(
 
 @Composable
 fun SignUpScreenContent(
+    context: Context,
+    errorMessage: String?,
+    clearErrorMessage: () -> Unit,
     uiState: SignUpUiState,
     onUsernameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
@@ -60,6 +70,12 @@ fun SignUpScreenContent(
             .background(Color.White)
             .padding(28.dp)
     ) {
+        LaunchedEffect(key1 = errorMessage) {
+            errorMessage?.let{
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                clearErrorMessage()
+            }
+        }
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
