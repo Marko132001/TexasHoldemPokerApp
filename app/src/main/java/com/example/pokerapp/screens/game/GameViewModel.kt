@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import java.net.ConnectException
+import java.util.Collections
 
 @HiltViewModel(assistedFactory = GameViewModel.DetailViewModelFactory::class)
 class GameViewModel @AssistedInject constructor(
@@ -51,7 +52,7 @@ class GameViewModel @AssistedInject constructor(
 
     val clientUser = mutableStateOf(UserData())
     val clientUserId = accountService.currentUserId
-    var opponentPlayersPositions by mutableStateOf(arrayOfNulls<String?>(5))
+    var playerSeatPositions by mutableStateOf(arrayOfNulls<String?>(5))
 
     val minBuyIn = 1000
     val maxBuyIn = 5000
@@ -99,6 +100,15 @@ class GameViewModel @AssistedInject constructor(
     private suspend fun clientUserData(clientUserData: UserData) {
         Log.d("GAMEVIEWMODEL", "${clientUserData.userId}, ${clientUserData.chipAmount}")
         client.sendUserData(clientUserData)
+    }
+
+    fun setCircularPlayerSeatOrder(){
+        val playerPositionsList = state.value.playerSeatPositions.toList()
+        val clientPlayerIndex = playerPositionsList.indexOf(clientUserId)
+
+        Collections.rotate(playerPositionsList, -clientPlayerIndex)
+
+        playerSeatPositions = playerPositionsList.toTypedArray()
     }
 
     override fun onCleared() {

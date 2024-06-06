@@ -102,8 +102,7 @@ fun PokerGame(
     if(gameUiState.players.isNotEmpty()) {
 
         LaunchedEffect(key1 = gameUiState.playerSeatPositions) {
-            gameViewModel.opponentPlayersPositions = gameUiState.playerSeatPositions
-                .filter { it != gameViewModel.clientUserId }.toTypedArray()
+            gameViewModel.setCircularPlayerSeatOrder()
         }
 
         LaunchedEffect(key1 = gameUiState.currentPlayerIndex, key2 = gameUiState.round) {
@@ -182,7 +181,7 @@ fun PokerGame(
                 )
             }
 
-            gameUiState.players.find { it.userId == gameViewModel.clientUserId }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.playerSeatPositions[0] }?.let {
                 if(it.chipBuyInAmount == 0 && it.playerState == PlayerState.SPECTATOR
                     && !gameViewModel.isOnPlayClicked)
                     showRebuyDialog = true
@@ -218,7 +217,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[0] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.playerSeatPositions[1] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand1) {
                         start.linkTo(parent.start, margin = 90.dp)
@@ -247,7 +246,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[1] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.playerSeatPositions[2] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand2) {
                         top.linkTo(parent.top, margin = 70.dp)
@@ -276,7 +275,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[2] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.playerSeatPositions[3] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand3) {
                         top.linkTo(parent.top, margin = 78.dp)
@@ -305,7 +304,7 @@ fun PokerGame(
                     gameViewModel = gameViewModel
                 )
             }
-            gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[3] }?.let {
+            gameUiState.players.find { it.userId == gameViewModel.playerSeatPositions[4] }?.let {
                 CardHandOpponent(
                     modifier = Modifier.constrainAs(opponentHand4) {
                         end.linkTo(parent.end, margin = 130.dp)
