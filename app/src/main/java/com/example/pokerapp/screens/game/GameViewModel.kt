@@ -2,7 +2,6 @@ package com.example.pokerapp.screens.game
 
 import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,7 +18,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,8 +58,6 @@ class GameViewModel @AssistedInject constructor(
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
 
-    var timerProgress by mutableFloatStateOf(0.0f)
-
     private val _isConnecting = MutableStateFlow(false)
     val isConnecting = _isConnecting.asStateFlow()
 
@@ -100,13 +96,6 @@ class GameViewModel @AssistedInject constructor(
     private suspend fun clientUserData(clientUserData: UserData) {
         Log.d("GAMEVIEWMODEL", "${clientUserData.userId}, ${clientUserData.chipAmount}")
         client.sendUserData(clientUserData)
-    }
-
-    suspend fun timerCountdown() {
-        for (i in 100 downTo 0) {
-            timerProgress = i.toFloat() / 100
-            delay(100)
-        }
     }
 
     override fun onCleared() {

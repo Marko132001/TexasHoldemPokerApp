@@ -214,8 +214,7 @@ fun PokerGame(
                     isActivePlayer =
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
                                 && gameUiState.round != GameRound.SHOWDOWN
-                                && gameUiState.isEnoughPlayers,
-                    gameViewModel = gameViewModel
+                                && gameUiState.isEnoughPlayers
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[0] }?.let {
@@ -243,8 +242,7 @@ fun PokerGame(
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
                     context = context,
-                    round = gameUiState.round,
-                    gameViewModel = gameViewModel
+                    round = gameUiState.round
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[1] }?.let {
@@ -272,8 +270,7 @@ fun PokerGame(
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
                     context = context,
-                    round = gameUiState.round,
-                    gameViewModel = gameViewModel
+                    round = gameUiState.round
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[2] }?.let {
@@ -301,8 +298,7 @@ fun PokerGame(
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
                     context = context,
-                    round = gameUiState.round,
-                    gameViewModel = gameViewModel
+                    round = gameUiState.round
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[3] }?.let {
@@ -330,8 +326,7 @@ fun PokerGame(
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
-                    round = gameUiState.round,
-                    gameViewModel = gameViewModel
+                    round = gameUiState.round
                 )
             }
 

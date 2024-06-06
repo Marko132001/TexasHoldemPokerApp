@@ -1,8 +1,6 @@
 package com.example.pokerapp.ui.components.game
 
-import android.annotation.SuppressLint
 import android.content.Context
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,15 +19,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -42,9 +38,7 @@ import com.example.pokerapp.R
 import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.PlayerDataState
-import com.example.pokerapp.screens.game.GameViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun CardHandPlayer(
@@ -54,8 +48,7 @@ fun CardHandPlayer(
     infoModifier: Modifier,
     player: PlayerDataState,
     dealerButtonPos: Int,
-    isActivePlayer: Boolean,
-    gameViewModel: GameViewModel
+    isActivePlayer: Boolean
 ){
 
     val holeCards = player.holeCards
@@ -105,8 +98,7 @@ fun CardHandPlayer(
             player.playerState,
             player.playerHandRank,
             dealerButtonPos,
-            isActivePlayer,
-            gameViewModel
+            isActivePlayer
         )
     }
 
@@ -127,8 +119,7 @@ fun CardHandOpponent(
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
     context: Context,
-    round: GameRound,
-    gameViewModel: GameViewModel
+    round: GameRound
 ){
 
     if(round == GameRound.SHOWDOWN &&
@@ -206,8 +197,7 @@ fun CardHandOpponent(
             player.playerState,
             player.playerHandRank,
             dealerButtonPos,
-            isActivePlayer,
-            gameViewModel
+            isActivePlayer
         )
     }
 
@@ -227,12 +217,21 @@ fun PlayerInformation(
     playerState: PlayerState,
     playerHandRank: String,
     dealerButtonPos: Int,
-    isActivePlayer: Boolean,
-    gameViewModel: GameViewModel
+    isActivePlayer: Boolean
 ) {
 
-    LaunchedEffect(key1 = isActivePlayer) {
-        gameViewModel.timerCountdown()
+    var value by remember { mutableFloatStateOf(1.0f) }
+
+    if(!isActivePlayer){
+        value = 0.0f
+    }
+    else{
+        LaunchedEffect(Unit) {
+            for (i in 100 downTo 1) {
+                value = i.toFloat() / 100
+                delay(100)
+            }
+        }
     }
 
     Column (Modifier.padding(10.dp)){
@@ -285,7 +284,7 @@ fun PlayerInformation(
 
                     if (isActivePlayer) {
                         LinearProgressIndicator(
-                            progress = gameViewModel.timerProgress,
+                            progress = value,
                             modifier = Modifier
                                 .fillMaxSize(),
                             color = Color.Yellow.copy(alpha = 0.2F),
