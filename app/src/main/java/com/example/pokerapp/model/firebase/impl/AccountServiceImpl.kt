@@ -3,6 +3,7 @@ package com.example.pokerapp.model.firebase.impl
 import android.util.Log
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,7 +23,7 @@ class AccountServiceImpl @Inject constructor(
 ) : AccountService {
 
     companion object{
-        private val DEFAULT_NUMBER_OF_CHIPS: Int = 30000
+        private const val DEFAULT_NUMBER_OF_CHIPS: Int = 30000
     }
 
     override val currentUserId: String
@@ -38,7 +39,15 @@ class AccountServiceImpl @Inject constructor(
         }
 
     override suspend fun authenticate(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password).await().user
+        try{
+            auth.signInWithEmailAndPassword(email, password).await()
+        }
+        catch (e: FirebaseAuthException) {
+            throw FirebaseAuthException(e.errorCode, "Invalid login credentials.")
+        }
+        catch (e: FirebaseNetworkException){
+            throw FirebaseNetworkException("Connection error. Check your internet connection.")
+        }
     }
 
     override suspend fun createAccount(email: String, password: String, username: String) {
@@ -64,7 +73,9 @@ class AccountServiceImpl @Inject constructor(
         catch (e: FirebaseFirestoreException){
             throw FirebaseFirestoreException("Error when accessing database.", e.code)
         }
-
+        catch (e: FirebaseNetworkException){
+            throw FirebaseNetworkException("Connection error. Check your internet connection.")
+        }
     }
 
     private fun saveUserData(userId: String, username: String, avatarUrl: String?)

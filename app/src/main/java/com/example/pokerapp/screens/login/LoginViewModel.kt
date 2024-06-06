@@ -11,6 +11,7 @@ import com.example.pokerapp.navigation.SIGN_UP_SCREEN
 import com.example.pokerapp.common.ext.isValidEmail
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -56,8 +57,8 @@ class LoginViewModel @Inject constructor(
             try {
                 accountService.authenticate(email, password)
                 openAndPopUp(HOME_SCREEN, LOGIN_SCREEN)
-            } catch (e: FirebaseAuthException) {
-                _errorMessage.value = "Invalid login credentials."
+            } catch (e: Exception) {
+                _errorMessage.value = e.message
                 return@launchCatching
             }
         }

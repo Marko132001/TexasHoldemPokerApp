@@ -11,6 +11,7 @@ import com.example.pokerapp.common.ext.passwordMatches
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
 import com.google.firebase.FirebaseException
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,15 +75,7 @@ class SignUpViewModel @Inject constructor(
                 accountService.createAccount(email, password, username)
                 openAndPopUp(HOME_SCREEN, SIGN_UP_SCREEN)
             }
-            catch (e: FirebaseAuthException) {
-                _errorMessage.value = e.message
-                return@launchCatching
-            }
-            catch (e: FirebaseFirestoreException){
-                _errorMessage.value = e.message
-                return@launchCatching
-            }
-            catch (e: IllegalArgumentException){
+            catch (e: Exception) {
                 _errorMessage.value = e.message
                 return@launchCatching
             }
