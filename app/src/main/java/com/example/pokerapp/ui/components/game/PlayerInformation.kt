@@ -38,6 +38,7 @@ import com.example.pokerapp.R
 import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
 import com.example.pokerapp.model.PlayerDataState
+import com.example.pokerapp.screens.game.GameViewModel
 import kotlinx.coroutines.delay
 
 @Composable
@@ -48,7 +49,9 @@ fun CardHandPlayer(
     infoModifier: Modifier,
     player: PlayerDataState,
     dealerButtonPos: Int,
-    isActivePlayer: Boolean
+    isActivePlayer: Boolean,
+    round: GameRound,
+    gameViewModel: GameViewModel
 ){
 
     val holeCards = player.holeCards
@@ -98,7 +101,9 @@ fun CardHandPlayer(
             player.playerState,
             player.playerHandRank,
             dealerButtonPos,
-            isActivePlayer
+            isActivePlayer,
+            round,
+            gameViewModel
         )
     }
 
@@ -119,7 +124,8 @@ fun CardHandOpponent(
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
     context: Context,
-    round: GameRound
+    round: GameRound,
+    gameViewModel: GameViewModel
 ){
 
     if(round == GameRound.SHOWDOWN &&
@@ -197,7 +203,9 @@ fun CardHandOpponent(
             player.playerState,
             player.playerHandRank,
             dealerButtonPos,
-            isActivePlayer
+            isActivePlayer,
+            round,
+            gameViewModel
         )
     }
 
@@ -217,18 +225,22 @@ fun PlayerInformation(
     playerState: PlayerState,
     playerHandRank: String,
     dealerButtonPos: Int,
-    isActivePlayer: Boolean
+    isActivePlayer: Boolean,
+    round: GameRound,
+    gameViewModel: GameViewModel
 ) {
 
     var value by remember { mutableFloatStateOf(1.0f) }
 
     if(!isActivePlayer){
         value = 0.0f
+        gameViewModel.timerProgress = 1.0f
     }
     else{
-        LaunchedEffect(Unit) {
-            for (i in 100 downTo 1) {
+        LaunchedEffect(key1 = isActivePlayer, key2 = round) {
+            for (i in 100 downTo 0) {
                 value = i.toFloat() / 100
+                gameViewModel.timerProgress = value
                 delay(100)
             }
         }

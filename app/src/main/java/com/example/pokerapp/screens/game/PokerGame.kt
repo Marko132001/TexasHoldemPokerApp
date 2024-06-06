@@ -36,7 +36,6 @@ import com.example.pokerapp.ui.components.game.CardHandPlayer
 import com.example.pokerapp.ui.components.game.CommunityCards
 import com.example.pokerapp.ui.components.game.InfoPopUpDialog
 import com.example.pokerapp.ui.components.game.PotValue
-import com.example.pokerapp.ui.components.game.RaiseAmountSlider
 import com.example.pokerapp.ui.components.game.TableBackground
 
 @Composable
@@ -214,7 +213,9 @@ fun PokerGame(
                     isActivePlayer =
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
                                 && gameUiState.round != GameRound.SHOWDOWN
-                                && gameUiState.isEnoughPlayers
+                                && gameUiState.isEnoughPlayers,
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[0] }?.let {
@@ -242,7 +243,8 @@ fun PokerGame(
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
                     context = context,
-                    round = gameUiState.round
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[1] }?.let {
@@ -270,7 +272,8 @@ fun PokerGame(
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
                     context = context,
-                    round = gameUiState.round
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[2] }?.let {
@@ -298,7 +301,8 @@ fun PokerGame(
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
                     context = context,
-                    round = gameUiState.round
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
                 )
             }
             gameUiState.players.find { it.userId == gameViewModel.opponentPlayersPositions[3] }?.let {
@@ -326,7 +330,8 @@ fun PokerGame(
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
-                    round = gameUiState.round
+                    round = gameUiState.round,
+                    gameViewModel = gameViewModel
                 )
             }
 
@@ -338,18 +343,12 @@ fun PokerGame(
                 gameViewModel = gameViewModel,
                 gameUiState = gameUiState,
                 clientActionTurn = gameUiState.players[gameUiState.currentPlayerIndex].userId
-                        == gameViewModel.clientUserId && gameUiState.players.size > 1
-            )
-        }
-
-        if (gameViewModel.isRaiseSlider) {
-            RaiseAmountSlider(
+                        == gameViewModel.clientUserId && gameUiState.players.size > 1,
                 minimumRaise = gameUiState.bigBlind.toFloat(),
                 maximumRaise = (
                         gameUiState.players[gameUiState.currentPlayerIndex].chipBuyInAmount -
                                 (gameUiState.currentHighBet - gameUiState.players[gameUiState.currentPlayerIndex].playerBet)
                         ).toFloat(),
-                gameViewModel = gameViewModel
             )
         }
 

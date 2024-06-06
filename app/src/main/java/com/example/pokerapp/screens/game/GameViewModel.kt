@@ -2,6 +2,7 @@ package com.example.pokerapp.screens.game
 
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -57,6 +58,8 @@ class GameViewModel @AssistedInject constructor(
 
     var raiseAmount by mutableIntStateOf(50)
     var isRaiseSlider by mutableStateOf(false)
+
+    var timerProgress by mutableFloatStateOf(1.0f)
 
     private val _isConnecting = MutableStateFlow(false)
     val isConnecting = _isConnecting.asStateFlow()
