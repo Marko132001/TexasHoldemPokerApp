@@ -9,10 +9,12 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.toObject
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.IllegalArgumentException
@@ -31,11 +33,9 @@ class AccountServiceImpl @Inject constructor(
 
     override val currentUser: Flow<UserData>
         get() = callbackFlow {
-            val listener = firestore.collection("users")
-                .document(currentUserId).addSnapshotListener { value, error ->
-                    this.trySend(value?.toObject<UserData>() ?: UserData())
-                }
-            awaitClose { listener.remove(); this.cancel() }
+            val user = fetchUserData()
+            this.trySend(user)
+            awaitClose { this.cancel() }
         }
 
     override suspend fun authenticate(email: String, password: String) {
@@ -48,6 +48,11 @@ class AccountServiceImpl @Inject constructor(
         catch (e: FirebaseNetworkException){
             throw FirebaseNetworkException("Connection error. Check your internet connection.")
         }
+    }
+
+    private suspend fun fetchUserData(): UserData {
+        return firestore.collection("users")
+            .document(currentUserId).get().await().toObject<UserData>() ?: UserData()
     }
 
     override suspend fun createAccount(email: String, password: String, username: String) {
