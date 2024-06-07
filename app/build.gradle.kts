@@ -88,6 +88,10 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+
+    //Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
 }
 

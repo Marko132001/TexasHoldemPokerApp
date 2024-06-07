@@ -113,12 +113,6 @@ class GameViewModel @AssistedInject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        state.value.players.find { it.userId == clientUserId }?.let {
-            val chipsWon = it.chipBuyInAmount - buyInValue
-            Log.d("GAMEVIEWMODEL", "${clientUser.value.username} quit the game. " +
-                    "Chips won: $chipsWon")
-            //TODO: Update total chips in firestore
-        }
         launchCatching {
             client.close()
         }

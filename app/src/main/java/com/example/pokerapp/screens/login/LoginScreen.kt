@@ -36,7 +36,7 @@ fun LoginScreen(
 
     LoginScreenContent(
         context = context,
-        errorMessage = viewModel.errorMessage.value,
+        infoMessage = viewModel.infoMessage.value,
         clearErrorMessage = viewModel::clearErrorMessage,
         uiState = uiState,
         onEmailChange = viewModel::onEmailChange,
@@ -49,7 +49,7 @@ fun LoginScreen(
 @Composable
 fun LoginScreenContent(
     context: Context,
-    errorMessage: String?,
+    infoMessage: String?,
     clearErrorMessage: () -> Unit,
     uiState: LoginUiState,
     onEmailChange: (String) -> Unit,
@@ -65,9 +65,9 @@ fun LoginScreenContent(
             .background(Color.White)
             .padding(28.dp)
     ) {
-        LaunchedEffect(key1 = errorMessage) {
-            errorMessage?.let{
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        LaunchedEffect(key1 = infoMessage) {
+            infoMessage?.let{
+                Toast.makeText(context, infoMessage, Toast.LENGTH_SHORT).show()
                 clearErrorMessage()
             }
         }

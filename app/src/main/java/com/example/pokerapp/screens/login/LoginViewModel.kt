@@ -1,18 +1,12 @@
 package com.example.pokerapp.screens.login
 
-import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.navigation.LOGIN_SCREEN
 import com.example.pokerapp.navigation.SIGN_UP_SCREEN
 import com.example.pokerapp.common.ext.isValidEmail
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -44,12 +38,12 @@ class LoginViewModel @Inject constructor(
 
     fun onLogInClick(openAndPopUp: (String, String) -> Unit) {
         if(!email.isValidEmail()) {
-            _errorMessage.value = "Please insert a valid email."
+            _infoMessage.value = "Please insert a valid email."
             return
         }
 
         if(password.isBlank()){
-            _errorMessage.value = "Password cannot be empty."
+            _infoMessage.value = "Password cannot be empty."
             return
         }
 
@@ -58,7 +52,7 @@ class LoginViewModel @Inject constructor(
                 accountService.authenticate(email, password)
                 openAndPopUp(HOME_SCREEN, LOGIN_SCREEN)
             } catch (e: Exception) {
-                _errorMessage.value = e.message
+                _infoMessage.value = e.message
                 return@launchCatching
             }
         }

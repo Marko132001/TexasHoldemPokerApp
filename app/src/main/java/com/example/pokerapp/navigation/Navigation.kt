@@ -30,7 +30,7 @@ import com.example.pokerapp.screens.login.LoginScreen
 import com.example.pokerapp.screens.sign_up.SignupScreen
 import com.example.pokerapp.screens.game.GameViewModel
 import com.example.pokerapp.screens.game.PokerGame
-import com.example.pokerapp.screens.home.HomeScreenViewModel
+import com.example.pokerapp.screens.settings.SettingsScreen
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 
@@ -77,6 +77,9 @@ fun Navigation() {
                 openScreen = { route -> appState.navigate(route) },
                 restartApp = { route -> appState.clearAndNavigate(route) }
             )
+        }
+        composable(route = SETTINGS_SCREEN) {
+            SettingsScreen()
         }
         composable(
             route = GAME_SCREEN_PARAMS,

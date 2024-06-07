@@ -8,14 +8,14 @@ import kotlinx.coroutines.launch
 
 open class AppViewModel() : ViewModel() {
 
-    protected val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage = _errorMessage
+    protected val _infoMessage = mutableStateOf<String?>(null)
+    val infoMessage = _infoMessage
     fun launchCatching(block: suspend CoroutineScope.() -> Unit) =
         viewModelScope.launch(
             block = block
         )
 
     fun clearErrorMessage() {
-        _errorMessage.value = null
+        _infoMessage.value = null
     }
 }

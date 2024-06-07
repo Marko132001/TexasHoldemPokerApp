@@ -1,5 +1,6 @@
 package com.example.pokerapp.model.firebase.impl
 
+import android.net.Uri
 import android.util.Log
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.model.firebase.AccountService
@@ -9,19 +10,19 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.toObject
-import kotlinx.coroutines.async
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.IllegalArgumentException
 
 class AccountServiceImpl @Inject constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage,
 ) : AccountService {
 
     companion object{
@@ -90,6 +91,30 @@ class AccountServiceImpl @Inject constructor(
         val userRef = firestore.collection("users").document(userId)
 
         userRef.set(userData)
+    }
+
+    override suspend fun addImageToFirebaseStorage(imageUri: Uri): String {
+        try {
+            val downloadUrl = storage.reference
+                .child("images").child("$currentUserId.jpg")
+                .putFile(imageUri).await()
+                .storage.downloadUrl.await()
+
+            addImageUrlToFirestore(downloadUrl)
+        }
+        catch (e: FirebaseFirestoreException){
+            throw FirebaseFirestoreException("Error when accessing database.", e.code)
+        }
+        catch (e: Exception){
+            throw Exception("Image upload failed")
+        }
+
+        return "Image upload complete"
+    }
+
+    private suspend fun addImageUrlToFirestore(downloadUrl: Uri) {
+        firestore.collection("users").document(currentUserId)
+            .update("avatarUrl", downloadUrl).await()
     }
 
     override suspend fun deleteAcount() {

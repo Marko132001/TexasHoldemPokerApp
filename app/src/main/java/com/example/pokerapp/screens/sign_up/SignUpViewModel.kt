@@ -1,6 +1,5 @@
 package com.example.pokerapp.screens.sign_up
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.navigation.LOGIN_SCREEN
@@ -10,12 +9,7 @@ import com.example.pokerapp.common.ext.isValidPassword
 import com.example.pokerapp.common.ext.passwordMatches
 import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.screens.AppViewModel
-import com.google.firebase.FirebaseException
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.firestore.FirebaseFirestoreException
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,17 +50,17 @@ class SignUpViewModel @Inject constructor(
 
     fun onSignUpClick(openAndPopUp: (String, String) -> Unit) {
         if (!email.isValidEmail()) {
-            _errorMessage.value = "Please insert a valid email."
+            _infoMessage.value = "Please insert a valid email."
             return
         }
 
         if (!password.isValidPassword()) {
-            _errorMessage.value = "Your password should have at least six digits."
+            _infoMessage.value = "Your password should have at least six digits."
             return
         }
 
         if (!password.passwordMatches(uiState.value.repeatPassword)) {
-            _errorMessage.value = "Passwords do not match."
+            _infoMessage.value = "Passwords do not match."
             return
         }
 
@@ -76,7 +70,7 @@ class SignUpViewModel @Inject constructor(
                 openAndPopUp(HOME_SCREEN, SIGN_UP_SCREEN)
             }
             catch (e: Exception) {
-                _errorMessage.value = e.message
+                _infoMessage.value = e.message
                 return@launchCatching
             }
         }

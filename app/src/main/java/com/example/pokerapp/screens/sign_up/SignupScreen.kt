@@ -37,7 +37,7 @@ fun SignupScreen(
 
     SignUpScreenContent(
         context = context,
-        errorMessage = viewModel.errorMessage.value,
+        infoMessage = viewModel.infoMessage.value,
         clearErrorMessage = viewModel::clearErrorMessage,
         uiState = uiState,
         onUsernameChange = viewModel::onUsernameChange,
@@ -53,7 +53,7 @@ fun SignupScreen(
 @Composable
 fun SignUpScreenContent(
     context: Context,
-    errorMessage: String?,
+    infoMessage: String?,
     clearErrorMessage: () -> Unit,
     uiState: SignUpUiState,
     onUsernameChange: (String) -> Unit,
@@ -70,9 +70,9 @@ fun SignUpScreenContent(
             .background(Color.White)
             .padding(28.dp)
     ) {
-        LaunchedEffect(key1 = errorMessage) {
-            errorMessage?.let{
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        LaunchedEffect(key1 = infoMessage) {
+            infoMessage?.let{
+                Toast.makeText(context, infoMessage, Toast.LENGTH_SHORT).show()
                 clearErrorMessage()
             }
         }

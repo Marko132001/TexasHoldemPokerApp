@@ -6,6 +6,7 @@ import com.example.pokerapp.navigation.GAME_SCREEN
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.navigation.LOGIN_SCREEN
 import com.example.pokerapp.model.firebase.AccountService
+import com.example.pokerapp.navigation.SETTINGS_SCREEN
 import com.example.pokerapp.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,8 +44,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     fun onSettingsClick(openScreen: (String) -> Unit){
-        //openScreen(SETTINGS_SCREEN)
-        //TODO: Redirect to settings screen (don't pop from backstack)
+        openScreen(SETTINGS_SCREEN)
     }
 
     fun onSignOutClick(restartApp: (String) -> Unit) {
