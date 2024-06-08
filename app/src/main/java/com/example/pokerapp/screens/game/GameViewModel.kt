@@ -45,7 +45,7 @@ class GameViewModel @AssistedInject constructor(
         launchCatching {
             accountService.currentUser.collect {
                 clientUser.value = it
-                clientUserData(UserData(it.userId, it.username, buyInValue))
+                clientUserData(UserData(it.userId, it.username, buyInValue, it.avatarUrl))
             }
         }
     }
@@ -81,7 +81,12 @@ class GameViewModel @AssistedInject constructor(
         isOnPlayClicked = true
         launchCatching {
             client.sendRebuyData(
-                UserData(clientUser.value.userId, clientUser.value.username, buyInValue)
+                UserData(
+                    clientUser.value.userId,
+                    clientUser.value.username,
+                    buyInValue,
+                    clientUser.value.avatarUrl
+                )
             )
         }
     }

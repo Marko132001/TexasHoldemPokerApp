@@ -30,10 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.pokerapp.R
 import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
@@ -97,6 +99,7 @@ fun CardHandPlayer(
     ){
         PlayerInformation(
             player.username,
+            player.avatarUrl,
             player.chipBuyInAmount,
             player.playerState,
             player.playerHandRank,
@@ -199,6 +202,7 @@ fun CardHandOpponent(
     ){
         PlayerInformation(
             player.username,
+            player.avatarUrl,
             player.chipBuyInAmount,
             player.playerState,
             player.playerHandRank,
@@ -221,6 +225,7 @@ fun CardHandOpponent(
 @Composable
 fun PlayerInformation(
     username: String,
+    avatarUrl: String?,
     playerChips: Int,
     playerState: PlayerState,
     playerHandRank: String,
@@ -266,12 +271,25 @@ fun PlayerInformation(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Image(
-                    modifier = Modifier,
-                    painter = painterResource(R.drawable.unknown),
-                    contentDescription = null,
-                    alignment = Alignment.Center
-                )
+
+                if(avatarUrl == null) {
+                    Image(
+                        modifier = Modifier.width(45.dp),
+                        painter = painterResource(R.drawable.unknown),
+                        contentDescription = null,
+                        alignment = Alignment.Center,
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                else{
+                    AsyncImage(
+                        modifier = Modifier.width(45.dp),
+                        model = avatarUrl,
+                        contentDescription = null,
+                        alignment = Alignment.Center,
+                        contentScale = ContentScale.Crop
+                    )
+                }
 
                 Box {
                     Column {
