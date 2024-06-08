@@ -213,6 +213,7 @@ fun PokerGame(
                         gameUiState.players[gameUiState.currentPlayerIndex].userId == it.userId
                                 && gameUiState.round != GameRound.SHOWDOWN
                                 && gameUiState.isEnoughPlayers,
+                    isEnoughPlayers = gameUiState.isEnoughPlayers,
                     round = gameUiState.round,
                     gameViewModel = gameViewModel
                 )

@@ -10,6 +10,7 @@ interface AccountService {
     suspend fun authenticate(email: String, password: String)
     suspend fun createAccount(email: String, password: String, username: String)
     suspend fun addImageToFirebaseStorage(imageUri: Uri): String
+    suspend fun changeUsername(newUsername: String): String
     suspend fun deleteAcount()
     suspend fun signOut()
 }

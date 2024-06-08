@@ -7,6 +7,8 @@ import com.example.pokerapp.model.firebase.AccountService
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.toObject
@@ -117,8 +119,38 @@ class AccountServiceImpl @Inject constructor(
             .update("avatarUrl", downloadUrl).await()
     }
 
+    override suspend fun changeUsername(newUsername: String): String {
+        try {
+            firestore.collection("users").document(currentUserId)
+                .update("username", newUsername)
+        }
+        catch (e: FirebaseFirestoreException){
+            throw FirebaseFirestoreException("Error while changing username.", e.code)
+        }
+
+        return "Username changed successfully."
+    }
+
     override suspend fun deleteAcount() {
-        auth.currentUser!!.delete().await()
+        try {
+            firestore.collection("users").document(currentUserId)
+                .delete().await()
+
+            auth.currentUser!!.delete().await()
+        }
+        catch (e: FirebaseAuthInvalidUserException){
+            throw FirebaseAuthInvalidUserException("This user is invalid.", "")
+        }
+        catch (e: FirebaseAuthRecentLoginRequiredException){
+            throw FirebaseAuthRecentLoginRequiredException(
+                "Recent login is required. Reauthenticate and try again.", ""
+            )
+        }
+        catch (e: FirebaseFirestoreException){
+            throw FirebaseFirestoreException(
+                "Error occurred when deleting firestore user data.", e.code
+            )
+        }
     }
 
     override suspend fun signOut() {

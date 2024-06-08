@@ -29,7 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,46 +54,56 @@ fun CardHandPlayer(
     player: PlayerDataState,
     dealerButtonPos: Int,
     isActivePlayer: Boolean,
+    isEnoughPlayers: Boolean,
     round: GameRound,
     gameViewModel: GameViewModel
 ){
 
     val holeCards = player.holeCards
 
-    val firstCardId: Int = remember(holeCards.first) {
-        context.resources.getIdentifier(
-            holeCards.first,
-            "drawable",
-            context.packageName
-        )
-    }
+    if(player.playerState != PlayerState.SPECTATOR && isEnoughPlayers) {
 
-    val secondCardId: Int = remember(holeCards.second) {
-        context.resources.getIdentifier(
-            holeCards.second,
-            "drawable",
-            context.packageName
-        )
-    }
+        val firstCardId: Int = remember(holeCards.first) {
+            context.resources.getIdentifier(
+                holeCards.first,
+                "drawable",
+                context.packageName
+            )
+        }
 
-    Box(
-        modifier = modifier
-    ) {
-        Image(
-            modifier = Modifier
-                .size(80.dp),
-            painter = painterResource(id = firstCardId),
-            contentDescription = null
-        )
+        val secondCardId: Int = remember(holeCards.second) {
+            context.resources.getIdentifier(
+                holeCards.second,
+                "drawable",
+                context.packageName
+            )
+        }
 
-        Image(
-            modifier = Modifier
-                .size(80.dp)
-                .absoluteOffset(x = 45.dp, y = 5.dp)
-                .rotate(10.0F),
-            painter = painterResource(id = secondCardId),
-            contentDescription = null
-        )
+        Box(
+            modifier = modifier
+        ) {
+            Image(
+                modifier = Modifier
+                    .size(80.dp),
+                painter = painterResource(id = firstCardId),
+                contentDescription = null,
+                colorFilter = if (player.playerState == PlayerState.FOLD) {
+                    ColorFilter.tint(Color(0x4D000000), blendMode = BlendMode.Darken)
+                } else null
+            )
+
+            Image(
+                modifier = Modifier
+                    .size(80.dp)
+                    .absoluteOffset(x = 45.dp, y = 5.dp)
+                    .rotate(10.0F),
+                painter = painterResource(id = secondCardId),
+                contentDescription = null,
+                colorFilter = if (player.playerState == PlayerState.FOLD) {
+                    ColorFilter.tint(Color(0x4D000000), blendMode = BlendMode.Darken)
+                } else null
+            )
+        }
     }
 
     Box (

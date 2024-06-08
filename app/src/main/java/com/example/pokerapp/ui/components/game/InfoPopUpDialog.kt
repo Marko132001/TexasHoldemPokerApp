@@ -50,7 +50,7 @@ fun InfoPopUpDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp)
+                .height(170.dp)
                 .padding(8.dp)
                 .border(BorderStroke(1.dp, Color.White), RoundedCornerShape(16.dp)),
             shape = RoundedCornerShape(16.dp),
@@ -80,7 +80,7 @@ fun InfoPopUpDialog(
                     modifier = Modifier
                         .fillMaxSize()
                         .wrapContentSize(Alignment.Center)
-                        .padding(horizontal = 65.dp),
+                        .padding(horizontal = 35.dp),
                     textAlign = TextAlign.Center,
                     color = Color.Black,
                     fontWeight = FontWeight.ExtraBold
@@ -90,7 +90,7 @@ fun InfoPopUpDialog(
 
         Box (
             modifier = Modifier
-                .absoluteOffset(x = 130.dp, y = 120.dp)
+                .absoluteOffset(x = 130.dp, y = 140.dp)
         ) {
             Row {
                 Button(

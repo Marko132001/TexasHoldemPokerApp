@@ -70,7 +70,7 @@ fun Navigation() {
             )
         }
         composable(route = HOME_SCREEN) {
-            window.statusBarColor = Color(0xff1893b5).toArgb()
+            window.statusBarColor = Color(0xff10556e).toArgb()
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             HomeScreen(
                 openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) },
@@ -79,7 +79,10 @@ fun Navigation() {
             )
         }
         composable(route = SETTINGS_SCREEN) {
-            SettingsScreen()
+            SettingsScreen(
+                openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) },
+                restartApp = { route -> appState.clearAndNavigate(route) }
+            )
         }
         composable(
             route = GAME_SCREEN_PARAMS,

@@ -1,7 +1,6 @@
 package com.example.pokerapp.screens.home
 
 import android.util.Log
-import com.example.pokerapp.model.UserData
 import com.example.pokerapp.navigation.GAME_SCREEN
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.navigation.LOGIN_SCREEN
@@ -9,8 +8,6 @@ import com.example.pokerapp.model.firebase.AccountService
 import com.example.pokerapp.navigation.SETTINGS_SCREEN
 import com.example.pokerapp.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,9 +17,6 @@ class HomeScreenViewModel @Inject constructor(
 
     val minBuyIn = 1000
     val maxBuyIn = 5000
-
-    private val _userData = MutableStateFlow(UserData())
-    val userData = _userData.asStateFlow()
 
     init {
         launchCatching {
@@ -43,8 +37,8 @@ class HomeScreenViewModel @Inject constructor(
         //TODO: Redirect to leaderboards screen (don't pop from backstack)
     }
 
-    fun onSettingsClick(openScreen: (String) -> Unit){
-        openScreen(SETTINGS_SCREEN)
+    fun onSettingsClick(openAndPopUp: (String, String) -> Unit){
+        openAndPopUp(SETTINGS_SCREEN, HOME_SCREEN)
     }
 
     fun onSignOutClick(restartApp: (String) -> Unit) {
