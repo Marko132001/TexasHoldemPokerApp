@@ -1,14 +1,18 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.kapt")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.projectapp"
+    namespace = "com.example.pokerapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.projectapp"
+        applicationId = "com.example.pokerapp"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -65,4 +69,32 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    //Dagger - Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    kapt(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // Ktor
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.websockets)
+    implementation(libs.ktor.client.logging)
+
+    implementation(libs.kotlinx.serialization.json)
+
+    //Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+
+    //Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+}
+
+kapt {
+    correctErrorTypes = true
 }
