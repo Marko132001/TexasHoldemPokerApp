@@ -11,6 +11,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.dataObjects
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.cancel
@@ -40,6 +42,11 @@ class AccountServiceImpl @Inject constructor(
             this.trySend(user)
             awaitClose { this.cancel() }
         }
+
+    override val users: Flow<List<UserData>>
+        get() = firestore.collection("users")
+            .orderBy("chipAmount", Query.Direction.DESCENDING)
+            .dataObjects()
 
     override suspend fun authenticate(email: String, password: String) {
         try{
@@ -131,10 +138,15 @@ class AccountServiceImpl @Inject constructor(
         return "Username changed successfully."
     }
 
-    override suspend fun deleteAcount() {
+    override suspend fun deleteAcount(avatarUrl: String?) {
         try {
             firestore.collection("users").document(currentUserId)
                 .delete().await()
+
+            if(avatarUrl != null) {
+                storage.reference.child("images").child("$currentUserId.jpg")
+                    .delete().await()
+            }
 
             auth.currentUser!!.delete().await()
         }

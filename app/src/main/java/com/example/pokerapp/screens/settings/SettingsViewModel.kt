@@ -46,7 +46,7 @@ class SettingsViewModel @Inject constructor(
     fun onDeleteAccountClick(restartApp: (String) -> Unit){
         launchCatching {
             try {
-                accountService.deleteAcount()
+                accountService.deleteAcount(_userData.value.avatarUrl)
                 restartApp(LOGIN_SCREEN)
             }
             catch (e: Exception){

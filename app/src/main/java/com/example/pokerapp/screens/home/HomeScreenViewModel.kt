@@ -5,6 +5,7 @@ import com.example.pokerapp.navigation.GAME_SCREEN
 import com.example.pokerapp.navigation.HOME_SCREEN
 import com.example.pokerapp.navigation.LOGIN_SCREEN
 import com.example.pokerapp.model.firebase.AccountService
+import com.example.pokerapp.navigation.LEADERBOARD_SCREEN
 import com.example.pokerapp.navigation.SETTINGS_SCREEN
 import com.example.pokerapp.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,8 +34,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     fun onLeaderboardsClick(openScreen: (String) -> Unit){
-        //openScreen(LEADERBOARDS_SCREEN)
-        //TODO: Redirect to leaderboards screen (don't pop from backstack)
+        openScreen(LEADERBOARD_SCREEN)
     }
 
     fun onSettingsClick(openAndPopUp: (String, String) -> Unit){

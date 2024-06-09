@@ -1,6 +1,5 @@
 package com.example.pokerapp.screens.settings
 
-import android.annotation.SuppressLint
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -24,23 +23,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
 import com.example.pokerapp.R
 import com.example.pokerapp.model.UserData
+import com.example.pokerapp.ui.components.common.TopNavigationBar
 import com.example.pokerapp.ui.components.game.InfoPopUpDialog
 
 
@@ -90,8 +82,6 @@ fun SettingsScreen(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SettingsScreenContent(
     userData: UserData,
@@ -164,179 +154,157 @@ fun SettingsScreenContent(
         Scaffold(
             containerColor = Color(0xff1893b5),
             topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xff10556e),
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSecondary
-                    ),
-                    title = {
-                        Text(
-                            modifier = Modifier,
-                            text = "SETTINGS",
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xffffe6a1),
-                            fontSize = 22.sp
+                TopNavigationBar(
+                    titleText = "SETTINGS",
+                    onBackButtonClick = onBackButtonClick
+                )
+            }
+        ) { paddingValue ->
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValue)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val painter: Painter = if (imageUri != null) {
+                    rememberAsyncImagePainter(imageUri)
+                } else if (userData.avatarUrl == null) {
+                    painterResource(id = R.drawable.unknown)
+                } else {
+                    rememberAsyncImagePainter(userData.avatarUrl)
+                }
+
+                Image(
+                    painter = painter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .height(150.dp)
+                        .width(150.dp)
+                        .border(
+                            width = 2.dp,
+                            color = Color.Black
                         )
+                        .clickable {
+                            launcher.launch("image/*")
+                        }
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        if (imageUri != null) {
+                            imageUri?.let { uri ->
+                                onChangeProfilePictureClick(uri)
+                            }
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Please select image from gallery",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     },
-                    navigationIcon = {
-                        IconButton(onClick = { onBackButtonClick() }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = null,
-                                tint = Color(0xffffe6a1)
-                            )
-                        }
-                    }
-                )
-            }
-        ) {}
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            val painter: Painter = if(imageUri != null) {
-                rememberAsyncImagePainter(imageUri)
-            }
-            else if(userData.avatarUrl == null){
-                painterResource(id = R.drawable.unknown)
-            }
-            else{
-                rememberAsyncImagePainter(userData.avatarUrl)
-            }
-            
-            Image(
-                painter = painter,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .height(150.dp)
-                    .width(150.dp)
-                    .border(
-                        width = 2.dp,
-                        color = Color.Black
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .background(color = Color(0xffde7621), shape = RoundedCornerShape(5.dp))
+                        .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(5.dp)),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                ) {
+                    Text(
+                        text = "CHANGE PROFILE PICTURE",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
                     )
-                    .clickable {
-                        launcher.launch("image/*")
-                    }
-            )
+                }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    if (imageUri != null) {
-                        imageUri?.let { uri ->
-                            onChangeProfilePictureClick(uri)
-                        }
-                    }
-                    else {
-                        Toast.makeText(
-                            context,
-                            "Please select image from gallery",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                },
-                modifier = Modifier
-                    .wrapContentSize()
-                    .background(color = Color(0xffde7621), shape = RoundedCornerShape(5.dp))
-                    .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(5.dp)),
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text(
-                    text = "CHANGE PROFILE PICTURE",
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
+                Divider(
+                    color = Color.Black,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(top = 30.dp)
                 )
-            }
 
-            Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(top = 30.dp))
+                Spacer(modifier = Modifier.height(42.dp))
 
-            Spacer(modifier = Modifier.height(42.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp, end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Username:",
-                    modifier = Modifier.width(140.dp),
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 25.sp
-                )
-                TextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    textStyle = TextStyle(fontSize = 22.sp),
-                    colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedTextColor = Color.White,
-                        focusedTextColor = Color.White,
-                        unfocusedIndicatorColor = Color.White,
-                        focusedIndicatorColor = Color.White
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 4.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Username:",
+                        modifier = Modifier.width(140.dp),
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 25.sp
                     )
+                    TextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        textStyle = TextStyle(fontSize = 22.sp),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedTextColor = Color.White,
+                            focusedTextColor = Color.White,
+                            unfocusedIndicatorColor = Color.White,
+                            focusedIndicatorColor = Color.White
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        onChangeUsernameClick(username)
+                    },
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .background(color = Color(0xff4796d6), shape = RoundedCornerShape(5.dp))
+                        .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(5.dp)),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                ) {
+                    Text(
+                        text = "CHANGE USERNAME",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
+
+                Divider(
+                    color = Color.Black,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(top = 30.dp)
                 )
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(42.dp))
 
-            Button(
-                onClick = {
-                    onChangeUsernameClick(username)
-                },
-                modifier = Modifier
-                    .wrapContentSize()
-                    .background(color = Color(0xff4796d6), shape = RoundedCornerShape(5.dp))
-                    .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(5.dp)),
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text(
-                    text = "CHANGE USERNAME",
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-            }
-
-            Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(top = 30.dp))
-        }
-
-
-        Row(
-            modifier = Modifier
-                .padding(bottom = 60.dp),
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.Center
-        ) {
-
-            Button(
-                onClick = {
-                    showDeleteAccountDialog = true
-                },
-                modifier = Modifier
-                    .wrapContentSize()
-                    .background(color = Color.Red, shape = RoundedCornerShape(5.dp))
-                    .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(5.dp)),
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text(
-                    text = "DELETE ACCOUNT",
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
+                Button(
+                    onClick = {
+                        showDeleteAccountDialog = true
+                    },
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .background(color = Color.Red, shape = RoundedCornerShape(5.dp))
+                        .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(5.dp)),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                ) {
+                    Text(
+                        text = "DELETE ACCOUNT",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
             }
         }
 

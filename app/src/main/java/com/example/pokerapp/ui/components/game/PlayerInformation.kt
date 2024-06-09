@@ -32,12 +32,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.pokerapp.R
 import com.example.pokerapp.data.GameRound
 import com.example.pokerapp.data.PlayerState
@@ -249,6 +250,13 @@ fun PlayerInformation(
 
     var value by remember { mutableFloatStateOf(1.0f) }
 
+    val painter: Painter = if(avatarUrl != null) {
+        rememberAsyncImagePainter(avatarUrl)
+    }
+    else{
+        painterResource(id = R.drawable.unknown)
+    }
+
     if(!isActivePlayer){
         value = 0.0f
         gameViewModel.timerProgress = 1.0f
@@ -283,26 +291,13 @@ fun PlayerInformation(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-
-                if(avatarUrl == null) {
-                    Image(
-                        modifier = Modifier.width(45.dp),
-                        painter = painterResource(R.drawable.unknown),
-                        contentDescription = null,
-                        alignment = Alignment.Center,
-                        contentScale = ContentScale.Crop
-                    )
-                }
-                else{
-                    AsyncImage(
-                        modifier = Modifier.width(45.dp),
-                        model = avatarUrl,
-                        contentDescription = null,
-                        alignment = Alignment.Center,
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
+                Image(
+                    modifier = Modifier.width(45.dp),
+                    painter = painter,
+                    contentDescription = null,
+                    alignment = Alignment.Center,
+                    contentScale = ContentScale.Crop
+                )
                 Box {
                     Column {
                         Text(

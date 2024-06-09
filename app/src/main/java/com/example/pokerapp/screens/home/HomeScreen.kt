@@ -1,6 +1,5 @@
 package com.example.pokerapp.screens.home
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.pokerapp.R
 import com.example.pokerapp.model.UserData
 import com.example.pokerapp.ui.components.game.BuyInPopUpDialog
@@ -59,12 +59,12 @@ fun HomeScreen(
     homeViewModel: HomeScreenViewModel = hiltViewModel<HomeScreenViewModel>()
 ) {
 
-    val userData by homeViewModel.userData.collectAsStateWithLifecycle()
+    val userData = homeViewModel.userData.collectAsStateWithLifecycle()
 
     HomeScreenContent(
         minBuyIn = homeViewModel.minBuyIn,
         maxBuyIn = homeViewModel.maxBuyIn,
-        userData = userData,
+        userData = userData.value,
         openAndPopUp = openAndPopUp,
         onPlayClick = homeViewModel::onPlayClick,
         onLeaderboardsClick = { homeViewModel.onLeaderboardsClick(openScreen) },
@@ -74,7 +74,6 @@ fun HomeScreen(
 
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
@@ -90,6 +89,13 @@ fun HomeScreenContent(
 
     var showDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
+
+    val painter: Painter = if(userData.avatarUrl != null) {
+        rememberAsyncImagePainter(userData.avatarUrl)
+    }
+    else{
+        painterResource(id = R.drawable.unknown)
+    }
 
     if(showSignOutDialog){
         InfoPopUpDialog (
@@ -139,35 +145,19 @@ fun HomeScreenContent(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            if (userData.avatarUrl == null) {
-                                Image(
-                                    modifier = Modifier
-                                        .size(55.dp)
-                                        .border(
-                                            BorderStroke(2.dp, Color(0xffffe6a1)),
-                                            CircleShape
-                                        )
-                                        .clip(CircleShape),
-                                    painter = painterResource(R.drawable.unknown),
-                                    contentDescription = null,
-                                    alignment = Alignment.Center,
-                                    contentScale = ContentScale.Crop
-                                )
-                            } else {
-                                AsyncImage(
-                                    modifier = Modifier
-                                        .size(55.dp)
-                                        .border(
-                                            BorderStroke(2.dp, Color(0xffffe6a1)),
-                                            CircleShape
-                                        )
-                                        .clip(CircleShape),
-                                    model = userData.avatarUrl,
-                                    contentDescription = null,
-                                    alignment = Alignment.Center,
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
+                            Image(
+                                modifier = Modifier
+                                    .size(55.dp)
+                                    .border(
+                                        BorderStroke(2.dp, Color(0xffffe6a1)),
+                                        CircleShape
+                                    )
+                                    .clip(CircleShape),
+                                painter = painter,
+                                contentDescription = null,
+                                alignment = Alignment.Center,
+                                contentScale = ContentScale.Crop
+                            )
                             Column(
                                 modifier = Modifier.padding(start = 10.dp),
                                 horizontalAlignment = Alignment.Start
@@ -224,64 +214,66 @@ fun HomeScreenContent(
                     }
                 )
             }
-        ) {}
+        ) { paddingValue ->
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = { showDialog = true },
-                enabled = userData.chipAmount >= minBuyIn,
+            Column(
                 modifier = Modifier
-                    .wrapContentSize()
-                    .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))
-                    .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(50.dp)),
-                colors = ButtonDefaults.buttonColors(Color.Transparent),
+                    .fillMaxSize()
+                    .padding(paddingValue),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "PLAY",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    letterSpacing = 1.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-            Spacer(modifier = Modifier.height(30.dp))
-            Button(
-                onClick = { onLeaderboardsClick() },
-                modifier = Modifier
-                    .wrapContentSize()
-                    .background(color = Color(0xff4796d6), shape = RoundedCornerShape(50.dp))
-                    .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(50.dp)),
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text(
-                    text = "LEADERBOARD",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    letterSpacing = 1.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-            Spacer(modifier = Modifier.height(30.dp))
-            Button(
-                onClick = { onSettingsClick() },
-                modifier = Modifier
-                    .wrapContentSize()
-                    .background(color = Color(0xff4796d6), shape = RoundedCornerShape(50.dp))
-                    .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(50.dp)),
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text(
-                    text = "SETTINGS",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    letterSpacing = 1.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
+                Button(
+                    onClick = { showDialog = true },
+                    enabled = userData.chipAmount >= minBuyIn,
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .background(color = Color(0xffde7621), shape = RoundedCornerShape(50.dp))
+                        .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(50.dp)),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent),
+                ) {
+                    Text(
+                        text = "PLAY",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+                Spacer(modifier = Modifier.height(30.dp))
+                Button(
+                    onClick = { onLeaderboardsClick() },
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .background(color = Color(0xff4796d6), shape = RoundedCornerShape(50.dp))
+                        .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(50.dp)),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                ) {
+                    Text(
+                        text = "LEADERBOARD",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+                Spacer(modifier = Modifier.height(30.dp))
+                Button(
+                    onClick = { onSettingsClick() },
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .background(color = Color(0xff4796d6), shape = RoundedCornerShape(50.dp))
+                        .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(50.dp)),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                ) {
+                    Text(
+                        text = "SETTINGS",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
         }
     }
