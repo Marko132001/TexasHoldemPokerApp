@@ -13,13 +13,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_poker_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ProjectApp"
+        android:theme="@style/Theme.TexasHoldemPokerClient"
         tools:targetApi="31">
         <activity
             android:name=".PokerActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.ProjectApp">
+            android:theme="@style/Theme.TexasHoldemPokerClient">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

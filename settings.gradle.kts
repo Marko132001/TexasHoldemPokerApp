@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ProjectApp"
+rootProject.name = "TexasHoldemPokerClient"
 include(":app")
