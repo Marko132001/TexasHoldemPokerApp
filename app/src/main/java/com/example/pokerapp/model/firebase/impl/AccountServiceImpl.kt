@@ -128,6 +128,12 @@ class AccountServiceImpl @Inject constructor(
 
     override suspend fun changeUsername(newUsername: String): String {
         try {
+            if(!firestore.collection("users")
+                    .whereEqualTo("username", newUsername).get().await().isEmpty
+            ) {
+                throw IllegalArgumentException("Provided username is already taken.")
+            }
+
             firestore.collection("users").document(currentUserId)
                 .update("username", newUsername)
         }
@@ -140,22 +146,26 @@ class AccountServiceImpl @Inject constructor(
 
     override suspend fun deleteAcount(avatarUrl: String?) {
         try {
-            firestore.collection("users").document(currentUserId)
+            val tmpUserId = currentUserId
+            Log.d("FIREBASE", "Trying to delete user: $tmpUserId")
+
+            auth.currentUser!!.delete().await()
+
+            firestore.collection("users").document(tmpUserId)
                 .delete().await()
 
             if(avatarUrl != null) {
-                storage.reference.child("images").child("$currentUserId.jpg")
+                storage.reference.child("images").child("$tmpUserId.jpg")
                     .delete().await()
             }
-
-            auth.currentUser!!.delete().await()
         }
         catch (e: FirebaseAuthInvalidUserException){
-            throw FirebaseAuthInvalidUserException("This user is invalid.", "")
+            throw FirebaseAuthInvalidUserException("This user is invalid.", "This user is invalid.")
         }
         catch (e: FirebaseAuthRecentLoginRequiredException){
             throw FirebaseAuthRecentLoginRequiredException(
-                "Recent login is required. Reauthenticate and try again.", ""
+                "Recent login is required. Reauthenticate and try again.",
+                "Recent login is required. Reauthenticate and try again."
             )
         }
         catch (e: FirebaseFirestoreException){
